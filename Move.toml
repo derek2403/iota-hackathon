@@ -20,6 +20,7 @@ Iota = { git = "https://github.com/iotaledger/iota.git", subdir = "crates/iota-f
 
 [addresses]
 first_package = "0x0"
+clt_tutorial = "0x0"
 
 # Named addresses will be accessible in Move as `@name`. They're also exported:
 # for example, `std = "0x1"` is exported by the Standard Library.
