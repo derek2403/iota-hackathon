@@ -1,0 +1,10 @@
+[package]
+name = "sponsored_transactions"
+edition = "2024.beta"
+
+[dependencies]
+Iota = { git = "https://github.com/iotaledger/iota.git", subdir = "crates/iota-framework/packages/iota-framework", rev = "develop" }
+
+[addresses]
+sponsored_transactions = "0x0"
+iota = "0x2" 
