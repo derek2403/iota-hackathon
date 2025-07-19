@@ -18,7 +18,8 @@ const CONFIG = {
   },
 };
 
-async function initializeSystem() {
+// Add export statement for initializeSystem
+export async function initializeSystem() {
   const client = new IotaClient({ url: getFullnodeUrl("testnet") });
   const adminKeyBytes = Buffer.from(CONFIG.keys.adminPrivateKey, "base64");
   const adminPrivateKeyBytes = adminKeyBytes.slice(1);
@@ -27,7 +28,8 @@ async function initializeSystem() {
   return { client, adminKeypair, adminAddress };
 }
 
-async function showCurrentTokens() {
+// Add export statement for showCurrentTokens
+export async function showCurrentTokens() {
   console.log("💰 CURRENT CLT TOKEN BALANCE");
   console.log("============================");
 
@@ -57,7 +59,8 @@ async function showCurrentTokens() {
   }
 }
 
-async function mintAttendanceToken(recipientAddress, courseId = "CS101") {
+// Add export statement for mintAttendanceToken
+export async function mintAttendanceToken(recipientAddress, courseId = "CS101") {
   console.log("\n🪙 MINTING ATTENDANCE TOKEN");
   console.log("===========================");
   console.log(`Recipient: ${recipientAddress}, Course: ${courseId}`);
@@ -94,7 +97,8 @@ async function mintAttendanceToken(recipientAddress, courseId = "CS101") {
   }
 }
 
-async function mintMultipleTokens(
+// Add export statement for mintMultipleTokens
+export async function mintMultipleTokens(
   recipientAddress,
   count = 1,
   courseId = "CS101"

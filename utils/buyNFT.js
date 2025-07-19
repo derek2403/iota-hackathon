@@ -24,7 +24,8 @@ const NFT_CONFIG = {
   },
 };
 
-async function initializeSystem() {
+// Add export statement for initializeSystem
+export async function initializeSystem() {
   const client = new IotaClient({ url: getFullnodeUrl("testnet") });
   const adminKeyBytes = Buffer.from(
     TOKEN_CONFIG.keys.adminPrivateKey,
@@ -36,7 +37,8 @@ async function initializeSystem() {
   return { client, adminKeypair, adminAddress };
 }
 
-async function showCurrentTokens() {
+// Add export statement for showCurrentTokens
+export async function showCurrentTokens() {
   console.log("💰 CURRENT CLT TOKEN BALANCE");
   console.log("============================");
 
@@ -66,7 +68,8 @@ async function showCurrentTokens() {
   }
 }
 
-async function slashToken(tokenId) {
+// Add export statement for slashToken
+export async function slashToken(tokenId) {
   console.log("\n⚠️ SLASHING TOKEN");
   console.log("=================");
   console.log(`🎯 Slashing token: ${tokenId}`);
@@ -107,7 +110,8 @@ async function slashToken(tokenId) {
   }
 }
 
-async function mintNFT(name, description, imageUrl) {
+// Add export statement for mintNFT
+export async function mintNFT(name, description, imageUrl) {
   console.log("\n🎨 MINTING NEW NFT");
   console.log("=================");
   console.log(`Name: ${name}`);
@@ -150,7 +154,8 @@ async function mintNFT(name, description, imageUrl) {
   }
 }
 
-async function showMyNFTs() {
+// Add export statement for showMyNFTs
+export async function showMyNFTs() {
   console.log("🖼️ MY NFT COLLECTION");
   console.log("===================");
 
