@@ -42,20 +42,25 @@ We built a decentralized **Proof-of-Attendance System** where:
 ## 5. 👨‍🎓 Student Flow
 
 ```mermaid
-graph TD
-A[Student Onboarding] --> B[Submit KYC]
-B --> C[Get On-Chain DID]
-C --> D[Face Scan at Event]
-D --> E[Generate Face Hash]
-E --> F[Verify Hash + DID]
-F --> G[Smart Contract: Notarize Attendance]
-G --> H[Receive 1 Closed Loop Token (CLT)]
-H --> I{Use CLT?}
-I -->|Yes| J[Buy NFT Badge]
-I -->|No| K[Accumulate CLT]
-K --> L[Achieve Attendance Milestones]
-L --> M[Auto-Issue Certificate NFT]
-M --> N[Student Record Verifiable by Any Employer]
+flowchart TD
+    A[Student Onboarding] --> B[Submit KYC with Face]
+    B --> C[Generate Hash and Get DID]
+    C --> D[Face Scan at Event]
+    D --> E[Generate Face Hash]
+    E --> F[Verify Hash and DID]
+    F --> G[Apply Notarization for Attendance]
+    G --> H[Receive CLT Tokens]
+    H --> I{Use CLT?}
+    I -->|Yes| J[Use CLT to Buy NFT Badge]
+    I -->|No| K[Accumulate CLT]
+    K --> L[Achieve Milestones]
+    L --> M[Use CLT to Get Certificate NFT]
+    M --> N[Verifiable Student Record]
+    
+    style A fill:#e1f5fe
+    style C fill:#f3e5f5
+    style H fill:#e8f5e8
+    style M fill:#fff3e0
 ```
 
 ---
