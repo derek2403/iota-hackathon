@@ -1,7 +1,3 @@
-/**
- * 🎓 SETUP NEW ATTENDANCE SYSTEM (With Admin Authorization Fix)
- */
-
 import { IotaClient, getFullnodeUrl } from "@iota/iota-sdk/client";
 import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
 import { Transaction } from "@iota/iota-sdk/transactions";
