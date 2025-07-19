@@ -2,11 +2,14 @@ import { useState } from 'react';
 import UserRegistrationForm from '../components/UserRegistrationForm';
 import DIDDisplay from '../components/DIDDisplay';
 import WalletDIDCreation from '../components/WalletDIDCreation';
+import RealDIDCreation from '../components/RealDIDCreation';
+import StrongholdDIDCreation from '../components/StrongholdDIDCreation';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState(null);
   const [didInfo, setDidInfo] = useState(null);
   const [credential, setCredential] = useState(null);
+  const [creationMode, setCreationMode] = useState('stronghold'); // Default to Stronghold implementation
 
   const handleUserRegistration = (userData) => {
     setUserInfo(userData);
@@ -57,11 +60,11 @@ export default function Home() {
               </div>
               <div className="ml-4">
                 <h1 className="text-2xl font-bold text-gray-900">IOTA Identity Framework</h1>
-                <p className="text-sm text-gray-500">Wallet Integration with IOTA Testnet</p>
+                <p className="text-sm text-gray-500">Testnet with Stronghold Security</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">Powered by IOTA 2.0 + Wallet</p>
+              <p className="text-sm text-gray-500">Powered by IOTA 2.0 + Stronghold</p>
             </div>
           </div>
         </div>
@@ -74,7 +77,7 @@ export default function Home() {
             Create Your Digital Identity
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500">
-            Build verifiable, decentralized identities on the IOTA network using your connected wallet
+            Build verifiable, decentralized identities on the IOTA network with military-grade Stronghold security
           </p>
         </div>
 
@@ -84,8 +87,96 @@ export default function Home() {
               <UserRegistrationForm onUserRegistration={handleUserRegistration} />
             ) : (
               <div className="space-y-6">
-                {/* DID Creation Component */}
-                <WalletDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
+                {/* Creation Mode Toggle */}
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">Choose DID Creation Method</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => setCreationMode('stronghold')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        creationMode === 'stronghold'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      🔒 Stronghold Security
+                    </button>
+                    <button
+                      onClick={() => setCreationMode('real')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        creationMode === 'real'
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      🔥 Real Implementation
+                    </button>
+                    <button
+                      onClick={() => setCreationMode('local')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        creationMode === 'local'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      📝 Local Creation
+                    </button>
+                    <button
+                      onClick={() => setCreationMode('wallet')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium ${
+                        creationMode === 'wallet'
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      🔗 Wallet Integration
+                    </button>
+                  </div>
+                  <div className="mt-4 text-sm text-gray-600">
+                    {creationMode === 'stronghold' && (
+                      <p>🔒 <strong>Stronghold Security:</strong> Military-grade AES-256-GCM encryption, secure vault storage, cryptographic signing, and data integrity protection</p>
+                    )}
+                    {creationMode === 'real' && (
+                      <p>✅ <strong>Real Implementation:</strong> No simulations, real cryptography, persistent storage, secure key management</p>
+                    )}
+                    {creationMode === 'local' && (
+                      <p>📝 <strong>Local Creation:</strong> Create DID locally with user-based deterministic generation</p>
+                    )}
+                    {creationMode === 'wallet' && (
+                      <p>🔗 <strong>Wallet Integration:</strong> Use connected wallet to sign and publish DID to IOTA testnet</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* DID Creation Components */}
+                {creationMode === 'stronghold' && (
+                  <StrongholdDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
+                )}
+                {creationMode === 'real' && (
+                  <RealDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
+                )}
+                {creationMode === 'wallet' && (
+                  <WalletDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
+                )}
+                {creationMode === 'local' && (
+                  <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">Local DID Creation</h3>
+                    <button
+                      onClick={async () => {
+                        const response = await fetch('/api/create-did', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ userInfo }),
+                        });
+                        const result = await response.json();
+                        handleDIDCreated(result);
+                      }}
+                      className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                      Create Local DID
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -127,7 +218,7 @@ export default function Home() {
                   </a>
                 </li>
                 <li>
-                  <a href="https://explorer.iota.org/iota2-testnet" className="text-base text-gray-500 hover:text-gray-900">
+                  <a href="https://explorer.iota.org" className="text-base text-gray-500 hover:text-gray-900">
                     IOTA Explorer
                   </a>
                 </li>
@@ -137,11 +228,17 @@ export default function Home() {
               <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
                 Network
               </h3>
-              <div className="mt-4 space-y-2 text-sm text-gray-500">
-                <p>Network: IOTA 2.0 Testnet</p>
-                <p>Framework: IOTA Identity v1.5.1</p>
-                <p>Standards: W3C DID & VC</p>
-              </div>
+              <ul className="mt-4 space-y-4">
+                <li className="text-base text-gray-500">
+                  Network: IOTA 2.0 Testnet
+                </li>
+                <li className="text-base text-gray-500">
+                  Framework: IOTA Identity v1.6+
+                </li>
+                <li className="text-base text-gray-500">
+                  Standards: W3C DID & VC
+                </li>
+              </ul>
             </div>
           </div>
           <div className="mt-8 border-t border-gray-200 pt-8">
