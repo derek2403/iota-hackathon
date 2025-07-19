@@ -1,0 +1,445 @@
+import { useRef, useState, useEffect } from 'react';
+import Webcam from 'react-webcam';
+import { loadFaceModels } from '../utils/faceDetection';
+import { processCompleteface } from '../utils/faceProcessing';
+import { compareFaces } from '../utils/faceComparison';
+import { encodeFaceData, decodeFaceData } from '../utils/dataEncoding';
+import AttendanceSummary from './AttendanceSummary';
+
+const AttendanceVerification = () => {
+  const webcamRef = useRef(null);
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [storedProfiles, setStoredProfiles] = useState([]);
+  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [verificationResult, setVerificationResult] = useState(null);
+  const [attendanceRecords, setAttendanceRecords] = useState([]);
+
+  useEffect(() => {
+    initializeModels();
+    loadStoredProfiles();
+    loadAttendanceRecords();
+  }, []);
+
+  const initializeModels = async () => {
+    try {
+      setError('Loading face recognition models...');
+      await loadFaceModels();
+      setModelsLoaded(true);
+      setError('');
+    } catch (error) {
+      console.error('Error loading models:', error);
+      setError(error.message);
+    }
+  };
+
+  const loadStoredProfiles = () => {
+    try {
+      const profiles = [];
+      
+      // Get general biometric data
+      const generalData = localStorage.getItem('userBiometricData');
+      if (generalData) {
+        const parsed = JSON.parse(generalData);
+        profiles.push({
+          id: 'general',
+          name: parsed.userInfo?.name || 'Unknown User',
+          email: parsed.userInfo?.email || 'No Email',
+          data: parsed,
+          source: 'General Profile'
+        });
+      }
+
+      // Get all biometric profiles for specific users
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('biometric_')) {
+          const data = localStorage.getItem(key);
+          if (data) {
+            try {
+              const parsed = JSON.parse(data);
+              const email = key.replace('biometric_', '');
+              profiles.push({
+                id: email,
+                name: parsed.userInfo?.name || 'Unknown User',
+                email: email,
+                data: parsed,
+                source: 'User Specific Profile'
+              });
+            } catch (e) {
+              console.warn('Failed to parse biometric data for key:', key);
+            }
+          }
+        }
+      }
+
+      // Remove duplicates based on email
+      const uniqueProfiles = profiles.filter((profile, index, self) => 
+        index === self.findIndex(p => p.email === profile.email)
+      );
+
+      setStoredProfiles(uniqueProfiles);
+      console.log('Loaded stored biometric profiles:', uniqueProfiles);
+    } catch (error) {
+      console.error('Error loading stored profiles:', error);
+      setError('Failed to load stored biometric profiles');
+    }
+  };
+
+  const loadAttendanceRecords = () => {
+    const records = localStorage.getItem('attendanceRecords');
+    if (records) {
+      setAttendanceRecords(JSON.parse(records));
+    }
+  };
+
+  const saveAttendanceRecord = (record) => {
+    const updatedRecords = [record, ...attendanceRecords];
+    setAttendanceRecords(updatedRecords);
+    localStorage.setItem('attendanceRecords', JSON.stringify(updatedRecords));
+  };
+
+  const verifyAttendance = async () => {
+    if (!modelsLoaded) {
+      setError('Face recognition models not loaded yet');
+      return;
+    }
+
+    if (!selectedProfile) {
+      setError('Please select a profile to verify against');
+      return;
+    }
+
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) {
+      setError('Failed to capture image');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const img = document.createElement('img');
+      img.src = imageSrc;
+      
+      await new Promise(resolve => {
+        img.onload = resolve;
+      });
+
+      // Process current face
+      const currentFaceData = await processCompleteface(img);
+      
+      // Decode stored face data
+      const storedFaceData = decodeFaceData(selectedProfile.data.faceData);
+      
+      // Compare faces
+      const comparison = compareFaces(storedFaceData, currentFaceData);
+
+      const result = {
+        ...comparison,
+        timestamp: new Date().toLocaleString(),
+        currentFaceData: encodeFaceData(currentFaceData),
+        verifiedProfile: selectedProfile,
+        success: comparison.overallMatch
+      };
+
+      setVerificationResult(result);
+
+      // Save attendance record
+      const attendanceRecord = {
+        id: Date.now(),
+        profileId: selectedProfile.id,
+        userName: selectedProfile.name,
+        userEmail: selectedProfile.email,
+        timestamp: new Date().toISOString(),
+        success: result.success,
+        confidence: result.confidence,
+        verificationDetails: {
+          descriptorMatch: result.descriptorMatch,
+          geometryMatch: result.geometryMatch,
+          biometricMatch: result.biometricMatch,
+          landmarkMatch: result.landmarkMatch
+        }
+      };
+
+      saveAttendanceRecord(attendanceRecord);
+      console.log('Attendance verification completed:', result);
+
+    } catch (err) {
+      setError('Error during verification: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetVerification = () => {
+    setVerificationResult(null);
+    setError('');
+    setSelectedProfile(null);
+  };
+
+  const clearAttendanceRecords = () => {
+    setAttendanceRecords([]);
+    localStorage.removeItem('attendanceRecords');
+  };
+
+  const formatDate = (timestamp) => {
+    return new Date(timestamp).toLocaleString();
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          🏢 Biometric Attendance Verification
+        </h1>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Verify your identity using your registered biometric profile for secure attendance tracking.
+        </p>
+      </div>
+
+      <AttendanceSummary attendanceRecords={attendanceRecords} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Camera and Verification Section */}
+        <div className="space-y-6">
+          {/* Camera */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-bold mb-4">📷 Identity Verification</h2>
+            
+            {!modelsLoaded && (
+              <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">
+                Loading face recognition models... This may take a moment.
+              </div>
+            )}
+            
+            <div className="text-center mb-6">
+              <Webcam
+                audio={false}
+                ref={webcamRef}
+                screenshotFormat="image/jpeg"
+                videoConstraints={{
+                  width: 720,
+                  height: 560,
+                  facingMode: "user"
+                }}
+                className="rounded-lg mx-auto w-full"
+              />
+            </div>
+
+            {/* Profile Selection */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Your Profile:
+              </label>
+              <select
+                value={selectedProfile?.id || ''}
+                onChange={(e) => {
+                  const profile = storedProfiles.find(p => p.id === e.target.value);
+                  setSelectedProfile(profile || null);
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a registered profile...</option>
+                {storedProfiles.map((profile) => (
+                  <option key={profile.id} value={profile.id}>
+                    {profile.name} ({profile.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              onClick={verifyAttendance}
+              disabled={loading || !modelsLoaded || !selectedProfile}
+              className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded disabled:opacity-50"
+            >
+              {loading ? 'Verifying Identity...' : '🔍 Verify Attendance'}
+            </button>
+
+            <button
+              onClick={resetVerification}
+              className="w-full mt-2 bg-gray-500 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded"
+            >
+              🔄 Reset
+            </button>
+          </div>
+
+          {/* Stored Profiles */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-bold mb-4">👥 Registered Profiles ({storedProfiles.length})</h3>
+            
+            {storedProfiles.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="mx-auto h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500">
+                  No biometric profiles found. Please register first on the main page.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {storedProfiles.map((profile) => (
+                  <div
+                    key={profile.id}
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      selectedProfile?.id === profile.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    onClick={() => setSelectedProfile(profile)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium text-gray-900">{profile.name}</p>
+                        <p className="text-sm text-gray-500">{profile.email}</p>
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {profile.source}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Results and Records Section */}
+        <div className="space-y-6">
+          {/* Verification Results */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-xl font-bold mb-4">🔐 Verification Results</h3>
+
+            {loading && (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p className="mt-2 text-gray-600">Verifying your identity...</p>
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <strong>Error:</strong> {error}
+              </div>
+            )}
+
+            {verificationResult && (
+              <div className={`border-2 px-4 py-4 rounded-lg ${
+                verificationResult.success 
+                  ? 'bg-green-100 border-green-500 text-green-800'
+                  : 'bg-red-100 border-red-500 text-red-800'
+              }`}>
+                <div className="text-center mb-4">
+                  <div className="text-4xl mb-2">
+                    {verificationResult.success ? '✅' : '❌'}
+                  </div>
+                  <div className="text-2xl font-bold mb-2">
+                    {verificationResult.success ? 'ATTENDANCE VERIFIED' : 'VERIFICATION FAILED'}
+                  </div>
+                  <div className="text-lg">
+                    Confidence: {verificationResult.confidence}%
+                  </div>
+                  <div className="text-sm mt-2">
+                    User: {verificationResult.verifiedProfile.name}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                  <div>
+                    <p><strong>Neural Features:</strong> {verificationResult.descriptorMatch ? '✅' : '❌'}</p>
+                    <p><strong>Face Geometry:</strong> {verificationResult.geometryMatch ? '✅' : '❌'}</p>
+                  </div>
+                  <div>
+                    <p><strong>Biometric Features:</strong> {verificationResult.biometricMatch ? '✅' : '❌'}</p>
+                    <p><strong>Landmark Analysis:</strong> {verificationResult.landmarkMatch ? '✅' : '❌'}</p>
+                  </div>
+                </div>
+
+                <div className="text-xs bg-white bg-opacity-50 p-2 rounded">
+                  <p><strong>Timestamp:</strong> {verificationResult.timestamp}</p>
+                </div>
+              </div>
+            )}
+
+            {!verificationResult && !loading && !error && (
+              <div className="text-center py-8">
+                <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                  <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <p className="text-gray-500">
+                  Select your profile and verify your attendance.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Attendance Records */}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">📊 Attendance Records</h3>
+              {attendanceRecords.length > 0 && (
+                <button
+                  onClick={clearAttendanceRecords}
+                  className="text-sm bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded"
+                >
+                  Clear Records
+                </button>
+              )}
+            </div>
+
+            <div className="max-h-96 overflow-y-auto">
+              {attendanceRecords.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No attendance records yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {attendanceRecords.map((record) => (
+                    <div
+                      key={record.id}
+                      className={`p-3 border rounded-lg ${
+                        record.success
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-red-200 bg-red-50'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {record.success ? '✅' : '❌'} {record.userName}
+                          </p>
+                          <p className="text-sm text-gray-600">{record.userEmail}</p>
+                          <p className="text-xs text-gray-500">
+                            {formatDate(record.timestamp)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {record.confidence}% confidence
+                          </p>
+                          <div className="text-xs text-gray-500">
+                            {Object.values(record.verificationDetails).filter(Boolean).length}/4 checks passed
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AttendanceVerification; 
