@@ -6,36 +6,46 @@ import { getFundedClient } from "../utils/utils.js";
 
 /** Demonstrate how to create a Locked Notarization and publish it. */
 export async function createLocked() {
-    console.log("Creating a simple locked notarization example");
+    console.log("Creating an attendance record notarization");
 
     // create a new client that offers notarization related functions
     const notarizationClient = await getFundedClient();
 
-    // Calculate an unlock time (24 hours from now) to be used for deleteLock
-    const delete_unlock_at = Math.round(Date.now() / 1000 + 86400); // 24 hours
-
     const utf8Encode = new TextEncoder();
 
-    // create a new Locked Notarization
-    console.log("Building a simple locked notarization and publish it to the IOTA network");
+    // Hardcoded attendance record structure
+    const attendanceRecord = {
+        userId: "emp_001",
+        employeeName: "John Doe",
+        event: "team-meeting-2025-01-15",
+        timestamp: Date.now(),
+        location: "Conference Room A",
+        checkInTime: "2025-01-15T09:00:00Z",
+        checkOutTime: "2025-01-15T10:30:00Z",
+        status: "present",
+        department: "Engineering",
+        meetingType: "weekly-standup"
+    };
+
+    // Convert attendance record to JSON string, then to bytes
+    const attendanceJson = JSON.stringify(attendanceRecord, null, 2);
+    const attendanceBytes = utf8Encode.encode(attendanceJson);
+
+    // create a new Locked Notarization with attendance data
+    console.log("Building attendance notarization and publishing to IOTA network");
+    console.log("Attendance data:", attendanceRecord);
+    
     const { output: notarization } = await notarizationClient
         .createLocked()
-        // Control the type of State data by choosing one of the `with...State` functions below.
-        // Uncomment or comment the following lines to choose between string or byte State data.
-        //
-        // .withStringState("Important document content", "Document metadata e.g., version specifier")
-        // .withBytesState(utf8Encode.encode("Important document content"), "Document metadata e.g., version specifier")
         .withBytesState(
-            Uint8Array.from([14, 255, 0, 125, 64, 87, 11, 114, 108, 100]),
-            "Document metadata e.g., version specifier",
+            attendanceBytes,
+            `Attendance-${attendanceRecord.userId}-${attendanceRecord.event}`
         )
-        .withDeleteLock(TimeLock.withUnlockAt(delete_unlock_at))
-        .withImmutableDescription("This can not be changed any more")
-        .withUpdatableMetadata("This can be updated")
+        .withImmutableDescription(`Attendance record for ${attendanceRecord.employeeName} (${attendanceRecord.userId}) at ${attendanceRecord.event}`)
         .finish()
         .buildAndExecute(notarizationClient);
 
-    console.log("\n✅ Locked notarization created successfully!");
+    console.log("\n✅ Attendance notarization created successfully!");
 
     // check some important properties of the received OnChainNotarization
     console.log("\n----------------------------------------------------");
@@ -78,6 +88,28 @@ export async function createLocked() {
 
     console.log("\n🔒 The notarization is Locked and cannot be updated or transferred until it is destroyed");
     console.log("🗑️ The notarization can only be destroyed after the delete lock expires");
+
+    // Parse and display the attendance data from the notarization
+    console.log("\n----------------------------------------------------");
+    console.log("----- Stored Attendance Data -------------------");
+    console.log("----------------------------------------------------");
+    
+    try {
+        const storedData = JSON.parse(notarization.state.data.toString());
+        console.log("Employee:", storedData.employeeName);
+        console.log("User ID:", storedData.userId);
+        console.log("Event:", storedData.event);
+        console.log("Status:", storedData.status);
+        console.log("Location:", storedData.location);
+        console.log("Check-in:", storedData.checkInTime);
+        console.log("Check-out:", storedData.checkOutTime);
+        console.log("Department:", storedData.department);
+    } catch (e) {
+        console.log("Raw attendance data:", notarization.state.data.toString());
+    }
+
+    console.log("\n🔒 The attendance record is permanently locked on the IOTA blockchain");
+    console.log("📋 This creates an immutable, timestamped proof of attendance");
 
     return notarization;
 } 
