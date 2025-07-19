@@ -190,9 +190,9 @@ module clt_tutorial::attendance_system {
         // Only admin can manually add attendance
         assert!(tx_context::sender(ctx) == system.admin, ENotAuthorized);
         
-        // Verify student is registered
+        // Verify student is registered (or admin for demo purposes)
         assert!(
-            attendance_token::is_student(policy, student),
+            attendance_token::is_student(policy, student) || student == system.admin,
             ENotAuthorized
         );
 
