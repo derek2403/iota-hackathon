@@ -70,6 +70,7 @@ M --> N[Student Record Verifiable by Any Employer]
 | Gas Fee Management    | IOTA Gas Station                |
 | Smart Contracts       | Move                            |
 | Token Rewards         | Closed Loop Token (CLT)         |
+| NFTs                  | Attendance Badges & Certificates|
 | Certificate           | NFT Issuance via Smart Contract |
 | Backend               | Rust / Node.js                  |
 | Frontend              | React / TailwindCSS             |
