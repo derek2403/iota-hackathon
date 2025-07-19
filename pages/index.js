@@ -3,8 +3,6 @@ import UserRegistrationForm from '../components/UserRegistrationForm';
 import RegistrationFaceScanner from '../components/RegistrationFaceScanner';
 import DIDDisplay from '../components/DIDDisplay';
 import WalletDIDCreation from '../components/WalletDIDCreation';
-import RealDIDCreation from '../components/RealDIDCreation';
-import StrongholdDIDCreation from '../components/StrongholdDIDCreation';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState(null);
@@ -212,37 +210,8 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* DID Creation Components */}
-                {creationMode === 'stronghold' && (
-                  <StrongholdDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
-                )}
-                {creationMode === 'real' && (
-                  <RealDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
-                )}
                 {creationMode === 'wallet' && (
                   <WalletDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
-                )}
-                {creationMode === 'local' && (
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Local DID Creation</h3>
-                    <button
-                      onClick={async () => {
-                        const response = await fetch('/api/create-did', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            userInfo,
-                            biometricData: biometricData 
-                          }),
-                        });
-                        const result = await response.json();
-                        handleDIDCreated(result);
-                      }}
-                      className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Create Local DID {biometricData ? 'with Biometric Security' : ''}
-                    </button>
-                  </div>
                 )}
               </div>
             )}

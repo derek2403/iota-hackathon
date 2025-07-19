@@ -19,12 +19,11 @@ export async function createLocked(attendanceData = null) {
         studentName: "Liew Qi Jian",
         event: "Class Attendance",
         timestamp: Date.now(),
-        location: "Xsullin Curine Academy",
+        location: "Xsolla Curine Academy",
         checkInTime: "2025-01-15T09:00:00Z",
         checkOutTime: "2025-01-15T10:30:00Z",
         status: "present",
         school: "Computer Science",
-    };
 
     // Convert attendance record to JSON string, then to bytes
     const attendanceJson = JSON.stringify(attendanceRecord, null, 2);
