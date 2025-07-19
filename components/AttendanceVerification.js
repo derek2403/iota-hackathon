@@ -15,6 +15,8 @@ const AttendanceVerification = () => {
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
   const [attendanceRecords, setAttendanceRecords] = useState([]);
+  const [notarizing, setNotarizing] = useState(false);
+  const [notarizationResult, setNotarizationResult] = useState(null);
 
   useEffect(() => {
     initializeModels();
@@ -100,6 +102,60 @@ const AttendanceVerification = () => {
     localStorage.setItem('attendanceRecords', JSON.stringify(updatedRecords));
   };
 
+  const createAttendanceNotarization = async (attendanceRecord) => {
+    setNotarizing(true);
+    try {
+      console.log('🔗 Creating blockchain notarization for attendance...');
+      
+      const response = await fetch('/api/create-attendance-notarization', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          attendanceRecord: {
+            ...attendanceRecord,
+            biometricHash: selectedProfile.data.faceData.substring(0, 100), // First 100 chars of biometric hash
+            location: 'Office/Remote Location',
+            device: navigator.userAgent.includes('Mobile') ? 'Mobile Device' : 'Desktop Computer'
+          }
+        }),
+      });
+
+      const notarizationData = await response.json();
+
+      if (notarizationData.success) {
+        console.log('✅ Attendance notarization created successfully!');
+        setNotarizationResult(notarizationData.notarization);
+        
+        // Update attendance record with blockchain proof
+        const updatedRecord = {
+          ...attendanceRecord,
+          blockchainProof: notarizationData.notarization.blockchainProof,
+          notarizationId: notarizationData.notarization.id,
+          notarized: true
+        };
+
+        // Update the stored attendance records with blockchain proof
+        const updatedRecords = attendanceRecords.map(record => 
+          record.id === attendanceRecord.id ? updatedRecord : record
+        );
+        setAttendanceRecords(updatedRecords);
+        localStorage.setItem('attendanceRecords', JSON.stringify(updatedRecords));
+
+        return notarizationData.notarization;
+      } else {
+        throw new Error(notarizationData.error || 'Failed to create notarization');
+      }
+    } catch (err) {
+      console.error('Error creating attendance notarization:', err);
+      setError('Failed to create blockchain notarization: ' + err.message);
+      return null;
+    } finally {
+      setNotarizing(false);
+    }
+  };
+
   const verifyAttendance = async () => {
     if (!modelsLoaded) {
       setError('Face recognition models not loaded yet');
@@ -119,6 +175,7 @@ const AttendanceVerification = () => {
 
     setLoading(true);
     setError('');
+    setNotarizationResult(null);
 
     try {
       const img = document.createElement('img');
@@ -165,6 +222,13 @@ const AttendanceVerification = () => {
       };
 
       saveAttendanceRecord(attendanceRecord);
+
+      // If attendance verification was successful, create blockchain notarization
+      if (result.success) {
+        console.log('✅ Attendance verified successfully! Creating blockchain notarization...');
+        await createAttendanceNotarization(attendanceRecord);
+      }
+
       console.log('Attendance verification completed:', result);
 
     } catch (err) {
@@ -176,6 +240,7 @@ const AttendanceVerification = () => {
 
   const resetVerification = () => {
     setVerificationResult(null);
+    setNotarizationResult(null);
     setError('');
     setSelectedProfile(null);
   };
@@ -258,6 +323,12 @@ const AttendanceVerification = () => {
             >
               {loading ? 'Verifying Identity...' : '🔍 Verify Attendance'}
             </button>
+
+            {notarizing && (
+              <div className="mt-2 text-center py-2 px-4 bg-yellow-100 border border-yellow-400 text-yellow-700 rounded">
+                🔗 Creating blockchain notarization...
+              </div>
+            )}
 
             <button
               onClick={resetVerification}
@@ -367,6 +438,55 @@ const AttendanceVerification = () => {
               </div>
             )}
 
+            {/* Blockchain Notarization Results */}
+            {notarizationResult && verificationResult?.success && (
+              <div className="border-2 border-green-400 bg-green-50 px-4 py-4 rounded-lg mt-4">
+                <div className="text-center mb-4">
+                  <div className="text-3xl mb-2">🔗</div>
+                  <div className="text-lg font-bold text-green-800 mb-2">
+                    BLOCKCHAIN NOTARIZATION CREATED
+                  </div>
+                  <div className="text-sm text-green-700">
+                    Attendance record permanently stored on IOTA blockchain
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-green-800">Notarization ID:</span>
+                    <span className="font-mono text-green-700 text-xs">{notarizationResult.id}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-green-800">Network:</span>
+                    <span className="text-green-700">{notarizationResult.blockchainProof?.network}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-green-800">Created:</span>
+                    <span className="text-green-700">{new Date(notarizationResult.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-green-800">Immutable:</span>
+                    <span className="text-green-700">✅ Yes</span>
+                  </div>
+                </div>
+
+                <div className="mt-3 p-2 bg-white bg-opacity-50 rounded text-xs">
+                  <p><strong>Session ID:</strong> {notarizationResult.attendanceMetadata?.sessionId}</p>
+                  <p><strong>Verification Type:</strong> {notarizationResult.attendanceMetadata?.type}</p>
+                </div>
+              </div>
+            )}
+
+            {verificationResult?.success && notarizing && (
+              <div className="border-2 border-yellow-400 bg-yellow-50 px-4 py-4 rounded-lg mt-4">
+                <div className="text-center">
+                  <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mb-2"></div>
+                  <p className="text-yellow-800 font-medium">Creating blockchain notarization...</p>
+                  <p className="text-yellow-700 text-sm mt-1">Securing attendance record on IOTA network</p>
+                </div>
+              </div>
+            )}
+
             {!verificationResult && !loading && !error && (
               <div className="text-center py-8">
                 <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
@@ -415,11 +535,21 @@ const AttendanceVerification = () => {
                         <div>
                           <p className="font-medium text-gray-900">
                             {record.success ? '✅' : '❌'} {record.userName}
+                            {record.notarized && (
+                              <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                🔗 Notarized
+                              </span>
+                            )}
                           </p>
                           <p className="text-sm text-gray-600">{record.userEmail}</p>
                           <p className="text-xs text-gray-500">
                             {formatDate(record.timestamp)}
                           </p>
+                          {record.notarizationId && (
+                            <p className="text-xs text-blue-600 font-mono mt-1">
+                              Blockchain ID: {record.notarizationId}
+                            </p>
+                          )}
                         </div>
                         <div className="text-right">
                           <p className="text-sm font-medium">
@@ -428,6 +558,11 @@ const AttendanceVerification = () => {
                           <div className="text-xs text-gray-500">
                             {Object.values(record.verificationDetails).filter(Boolean).length}/4 checks passed
                           </div>
+                          {record.blockchainProof && (
+                            <div className="text-xs text-blue-600 mt-1">
+                              ⛓️ {record.blockchainProof.network}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

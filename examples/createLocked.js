@@ -5,7 +5,7 @@ import { TimeLock } from "@iota/notarization/node/index.js";
 import { getFundedClient } from "../utils/utils.js";
 
 /** Demonstrate how to create a Locked Notarization and publish it. */
-export async function createLocked() {
+export async function createLocked(attendanceData = null) {
     console.log("Creating an attendance record notarization");
 
     // create a new client that offers notarization related functions
@@ -13,18 +13,17 @@ export async function createLocked() {
 
     const utf8Encode = new TextEncoder();
 
-    // Hardcoded attendance record structure
-    const attendanceRecord = {
+    // Use provided attendance data or fallback to default
+    const attendanceRecord = attendanceData || {
         userId: "emp_001",
-        employeeName: "John Doe",
-        event: "team-meeting-2025-01-15",
+        studentName: "Liew Qi Jian",
+        event: "Class Attendance",
         timestamp: Date.now(),
-        location: "Conference Room A",
+        location: "Xsullin Curine Academy",
         checkInTime: "2025-01-15T09:00:00Z",
         checkOutTime: "2025-01-15T10:30:00Z",
         status: "present",
-        department: "Engineering",
-        meetingType: "weekly-standup"
+        school: "Computer Science",
     };
 
     // Convert attendance record to JSON string, then to bytes
@@ -39,9 +38,9 @@ export async function createLocked() {
         .createLocked()
         .withBytesState(
             attendanceBytes,
-            `Attendance-${attendanceRecord.userId}-${attendanceRecord.event}`
+            `Attendance-${attendanceRecord.userId || attendanceRecord.profileId}-${attendanceRecord.event || 'Verification'}`
         )
-        .withImmutableDescription(`Attendance record for ${attendanceRecord.employeeName} (${attendanceRecord.userId}) at ${attendanceRecord.event}`)
+        .withImmutableDescription(`Attendance record for ${attendanceRecord.studentName || attendanceRecord.userName} (${attendanceRecord.userId || attendanceRecord.profileId}) at ${attendanceRecord.event || attendanceRecord.location || 'Biometric Verification'}`)
         .finish()
         .buildAndExecute(notarizationClient);
 
@@ -96,14 +95,25 @@ export async function createLocked() {
     
     try {
         const storedData = JSON.parse(notarization.state.data.toString());
-        console.log("Employee:", storedData.employeeName);
-        console.log("User ID:", storedData.userId);
-        console.log("Event:", storedData.event);
-        console.log("Status:", storedData.status);
+        console.log("User:", storedData.studentName || storedData.userName);
+        console.log("User ID:", storedData.userId || storedData.profileId);
+        console.log("Event:", storedData.event || 'Biometric Verification');
+        console.log("Status:", storedData.status || (storedData.success ? 'verified' : 'failed'));
         console.log("Location:", storedData.location);
-        console.log("Check-in:", storedData.checkInTime);
-        console.log("Check-out:", storedData.checkOutTime);
-        console.log("Department:", storedData.department);
+        console.log("Check-in:", storedData.checkInTime || storedData.timestamp);
+        console.log("Check-out:", storedData.checkOutTime || 'N/A');
+        console.log("Department/School:", storedData.school || storedData.department || 'N/A');
+        
+        // Log biometric verification specific data if available
+        if (storedData.confidence) {
+            console.log("Verification Confidence:", storedData.confidence + '%');
+        }
+        if (storedData.verificationDetails) {
+            console.log("Verification Details:", storedData.verificationDetails);
+        }
+        if (storedData.biometricHash) {
+            console.log("Biometric Hash:", storedData.biometricHash.substring(0, 50) + '...');
+        }
     } catch (e) {
         console.log("Raw attendance data:", notarization.state.data.toString());
     }
