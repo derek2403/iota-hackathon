@@ -3,8 +3,6 @@ import UserRegistrationForm from '../components/UserRegistrationForm';
 import RegistrationFaceScanner from '../components/RegistrationFaceScanner';
 import DIDDisplay from '../components/DIDDisplay';
 import WalletDIDCreation from '../components/WalletDIDCreation';
-import RealDIDCreation from '../components/RealDIDCreation';
-import StrongholdDIDCreation from '../components/StrongholdDIDCreation';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState(null);
@@ -212,37 +210,8 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* DID Creation Components */}
-                {creationMode === 'stronghold' && (
-                  <StrongholdDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
-                )}
-                {creationMode === 'real' && (
-                  <RealDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
-                )}
                 {creationMode === 'wallet' && (
                   <WalletDIDCreation userInfo={userInfo} onDIDCreated={handleDIDCreated} />
-                )}
-                {creationMode === 'local' && (
-                  <div className="bg-white rounded-lg shadow p-6">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Local DID Creation</h3>
-                    <button
-                      onClick={async () => {
-                        const response = await fetch('/api/create-did', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ 
-                            userInfo,
-                            biometricData: biometricData 
-                          }),
-                        });
-                        const result = await response.json();
-                        handleDIDCreated(result);
-                      }}
-                      className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                    >
-                      Create Local DID {biometricData ? 'with Biometric Security' : ''}
-                    </button>
-                  </div>
                 )}
               </div>
             )}
@@ -256,65 +225,6 @@ export default function Home() {
           />
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
-                About IOTA Identity
-              </h3>
-              <p className="mt-4 text-base text-gray-500">
-                IOTA Identity enables Self-Sovereign Identity (SSI) through DID and Verifiable Credentials standards on the feeless IOTA network.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
-                Resources
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li>
-                  <a href="https://wiki.iota.org/identity.rs/introduction" className="text-base text-gray-500 hover:text-gray-900">
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iotaledger/identity.rs" className="text-base text-gray-500 hover:text-gray-900">
-                    GitHub Repository
-                  </a>
-                </li>
-                <li>
-                  <a href="https://explorer.iota.org" className="text-base text-gray-500 hover:text-gray-900">
-                    IOTA Explorer
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
-                Network
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li className="text-base text-gray-500">
-                  Network: IOTA 2.0 Testnet
-                </li>
-                <li className="text-base text-gray-500">
-                  Framework: IOTA Identity v1.6+
-                </li>
-                <li className="text-base text-gray-500">
-                  Standards: W3C DID & VC
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-200 pt-8">
-            <p className="text-base text-gray-400 text-center">
-              Built with IOTA Identity Framework. This is a demonstration on testnet.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
