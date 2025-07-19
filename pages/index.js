@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import UserRegistrationForm from '../components/UserRegistrationForm';
+import RegistrationFaceScanner from '../components/RegistrationFaceScanner';
 import DIDDisplay from '../components/DIDDisplay';
 import WalletDIDCreation from '../components/WalletDIDCreation';
 import RealDIDCreation from '../components/RealDIDCreation';
@@ -7,23 +8,47 @@ import StrongholdDIDCreation from '../components/StrongholdDIDCreation';
 
 export default function Home() {
   const [userInfo, setUserInfo] = useState(null);
+  const [biometricData, setBiometricData] = useState(null);
   const [didInfo, setDidInfo] = useState(null);
   const [credential, setCredential] = useState(null);
   const [creationMode, setCreationMode] = useState('stronghold'); // Default to Stronghold implementation
+  const [showFaceScanner, setShowFaceScanner] = useState(false);
 
   const handleUserRegistration = (userData) => {
     setUserInfo(userData);
+    setShowFaceScanner(true); // Show face scanner after registration
+  };
+
+  const handleFaceScanComplete = (faceData) => {
+    setBiometricData(faceData);
+    setShowFaceScanner(false);
+    console.log('Biometric data captured and stored:', faceData);
+  };
+
+  const handleSkipFaceScan = () => {
+    setShowFaceScanner(false);
+    setBiometricData(null);
+    console.log('Face scan skipped by user');
   };
 
   const handleDIDCreated = (didData) => {
-    setDidInfo(didData);
-    setCredential(didData.credential);
+    // Include biometric data in DID creation if available
+    const enhancedDidData = {
+      ...didData,
+      biometricData: biometricData,
+      hasBiometricVerification: !!biometricData
+    };
+    
+    setDidInfo(enhancedDidData);
+    setCredential(enhancedDidData.credential);
   };
 
   const handleCreateNewDID = () => {
     setUserInfo(null);
+    setBiometricData(null);
     setDidInfo(null);
     setCredential(null);
+    setShowFaceScanner(false);
   };
 
   const handleVerifyCredential = async () => {
@@ -85,8 +110,47 @@ export default function Home() {
           <div className="space-y-8">
             {!userInfo ? (
               <UserRegistrationForm onUserRegistration={handleUserRegistration} />
+            ) : showFaceScanner ? (
+              <RegistrationFaceScanner 
+                userInfo={userInfo}
+                onFaceScanComplete={handleFaceScanComplete}
+                onSkip={handleSkipFaceScan}
+              />
             ) : (
               <div className="space-y-6">
+                {/* Show biometric status */}
+                {biometricData && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-green-800 font-medium">
+                        ✅ Biometric verification enabled (Confidence: {Math.round(biometricData.detectionScore * 100)}%)
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {!biometricData && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-yellow-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L5.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <span className="text-yellow-800 font-medium">
+                        ⚠️ Biometric verification skipped - Consider adding for enhanced security
+                      </span>
+                      <button
+                        onClick={() => setShowFaceScanner(true)}
+                        className="ml-4 text-sm bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-3 py-1 rounded"
+                      >
+                        Add Now
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* Creation Mode Toggle */}
                 <div className="bg-white rounded-lg shadow p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Choose DID Creation Method</h3>
@@ -166,14 +230,17 @@ export default function Home() {
                         const response = await fetch('/api/create-did', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ userInfo }),
+                          body: JSON.stringify({ 
+                            userInfo,
+                            biometricData: biometricData 
+                          }),
                         });
                         const result = await response.json();
                         handleDIDCreated(result);
                       }}
                       className="w-full py-3 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                     >
-                      Create Local DID
+                      Create Local DID {biometricData ? 'with Biometric Security' : ''}
                     </button>
                   </div>
                 )}
