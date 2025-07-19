@@ -95,58 +95,7 @@ const DIDDisplay = ({ didInfo, credential, onCreateNewDID, onVerifyCredential })
           </div>
         </div>
       )}
-
-      {/* Network Status */}
-      {didInfo.network && (
-        <div className={`rounded-lg p-4 ${didInfo.published 
-          ? 'bg-blue-50 border border-blue-200' 
-          : 'bg-amber-50 border border-amber-200'
-        }`}>
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              {didInfo.published ? (
-                <svg className="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              )}
-            </div>
-            <div className="ml-3">
-              <p className={`text-sm font-medium ${didInfo.published ? 'text-blue-800' : 'text-amber-800'}`}>
-                Network: {didInfo.network}
-              </p>
-              <p className={`text-sm ${didInfo.published ? 'text-blue-600' : 'text-amber-600'}`}>
-                {didInfo.published 
-                  ? '✅ Successfully published to IOTA testnet' 
-                  : '📝 DID created locally - not published to blockchain'
-                }
-              </p>
-              {didInfo.note && (
-                <p className="text-sm text-gray-600 mt-1">{didInfo.note}</p>
-              )}
-              {!didInfo.published && didInfo.publishingLimitation && (
-                <div className="mt-2 text-xs text-amber-700">
-                  <p>⚠️ <strong>Why this DID is not in the explorer:</strong></p>
-                  <p className="mt-1 mb-2">{didInfo.publishingLimitation.reason}</p>
-                  <p><strong>To publish to blockchain, we would need:</strong></p>
-                  <ul className="list-disc list-inside mt-1 space-y-1">
-                    {didInfo.publishingLimitation.requirements.map((req, index) => (
-                      <li key={index}>{req}</li>
-                    ))}
-                  </ul>
-                  <p className="mt-2 text-amber-600">
-                    <strong>💡 Workaround:</strong> {didInfo.publishingLimitation.workaround}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
+      
       {/* User-Based DID Information */}
       {didInfo.didGenerationMethod === "user-credentials" && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -178,72 +127,31 @@ const DIDDisplay = ({ didInfo, credential, onCreateNewDID, onVerifyCredential })
       )}
 
       {/* DID Information */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <div className="bg-white p-6">
         <h3 className="text-xl font-semibold text-gray-900 mb-4">
           Your Decentralized Identifier (DID)
         </h3>
         
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               DID
             </label>
             <div className="flex items-center space-x-2">
-              <code className="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm font-mono break-all">
+              <code className="flex-1 px-3 py-2 bg-gray-50 rounded-md text-sm font-mono break-all">
                 {didInfo.did}
               </code>
               <button
                 onClick={() => copyToClipboard(didInfo.did)}
-                className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                title="Copy DID"
               >
-                {copied ? 'Copied!' : 'Copy'}
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
               </button>
             </div>
           </div>
-
-          {didInfo.mnemonic && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mnemonic (Demo Key - Keep Safe!)
-              </label>
-              <div className="flex items-center space-x-2">
-                <code className="flex-1 px-3 py-2 bg-red-50 border border-red-300 rounded-md text-sm font-mono break-all text-red-800">
-                  {didInfo.mnemonic}
-                </code>
-                <button
-                  onClick={() => copyToClipboard(didInfo.mnemonic)}
-                  className="px-3 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-              <p className="text-xs text-red-600 mt-1">
-                ⚠️ This mnemonic controls your DID. In production, store it securely!
-              </p>
-            </div>
-          )}
-
-          {didInfo.walletAddress && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Connected Wallet Address
-              </label>
-              <div className="flex items-center space-x-2">
-                <code className="flex-1 px-3 py-2 bg-green-50 border border-green-300 rounded-md text-sm font-mono break-all text-green-800">
-                  {didInfo.walletAddress}
-                </code>
-                <button
-                  onClick={() => copyToClipboard(didInfo.walletAddress)}
-                  className="px-3 py-2 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-                >
-                  Copy
-                </button>
-              </div>
-              <p className="text-xs text-green-600 mt-1">
-                ✅ DID is linked to this wallet address
-              </p>
-            </div>
-          )}
 
           {didInfo.transactionDigest && (
             <div>
@@ -251,35 +159,19 @@ const DIDDisplay = ({ didInfo, credential, onCreateNewDID, onVerifyCredential })
                 Transaction Digest
               </label>
               <div className="flex items-center space-x-2">
-                <code className="flex-1 px-3 py-2 bg-blue-50 border border-blue-300 rounded-md text-sm font-mono break-all text-blue-800">
+                <code className="flex-1 px-3 py-2 bg-blue-50 rounded-md text-sm font-mono break-all text-blue-800">
                   {didInfo.transactionDigest}
                 </code>
                 <button
                   onClick={() => copyToClipboard(didInfo.transactionDigest)}
-                  className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                  className="p-2 text-gray-600 hover:text-blue-600 transition-colors"
+                  title="Copy Transaction Digest"
                 >
-                  Copy
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
                 </button>
               </div>
-              <p className="text-xs text-blue-600 mt-1">
-                📜 View transaction on IOTA Explorer
-              </p>
-            </div>
-          )}
-
-          {didInfo.explorerUrl && (
-            <div>
-              <a
-                href={didInfo.explorerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center px-4 py-2 text-sm bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-              >
-                <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                </svg>
-                View on IOTA Explorer
-              </a>
             </div>
           )}
         </div>

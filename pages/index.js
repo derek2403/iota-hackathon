@@ -225,65 +225,6 @@ export default function Home() {
           />
         )}
       </div>
-
-      {/* Footer */}
-      <footer className="bg-white border-t">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
-                About IOTA Identity
-              </h3>
-              <p className="mt-4 text-base text-gray-500">
-                IOTA Identity enables Self-Sovereign Identity (SSI) through DID and Verifiable Credentials standards on the feeless IOTA network.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
-                Resources
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li>
-                  <a href="https://wiki.iota.org/identity.rs/introduction" className="text-base text-gray-500 hover:text-gray-900">
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a href="https://github.com/iotaledger/identity.rs" className="text-base text-gray-500 hover:text-gray-900">
-                    GitHub Repository
-                  </a>
-                </li>
-                <li>
-                  <a href="https://explorer.iota.org" className="text-base text-gray-500 hover:text-gray-900">
-                    IOTA Explorer
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase">
-                Network
-              </h3>
-              <ul className="mt-4 space-y-4">
-                <li className="text-base text-gray-500">
-                  Network: IOTA 2.0 Testnet
-                </li>
-                <li className="text-base text-gray-500">
-                  Framework: IOTA Identity v1.6+
-                </li>
-                <li className="text-base text-gray-500">
-                  Standards: W3C DID & VC
-                </li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 border-t border-gray-200 pt-8">
-            <p className="text-base text-gray-400 text-center">
-              Built with IOTA Identity Framework. This is a demonstration on testnet.
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
