@@ -4,7 +4,6 @@ import { loadFaceModels } from '../utils/faceDetection';
 import { processCompleteface } from '../utils/faceProcessing';
 import { compareFaces } from '../utils/faceComparison';
 import { encodeFaceData, decodeFaceData } from '../utils/dataEncoding';
-import AttendanceSummary from './AttendanceSummary';
 
 const AttendanceVerification = () => {
   const webcamRef = useRef(null);
@@ -14,7 +13,6 @@ const AttendanceVerification = () => {
   const [storedProfiles, setStoredProfiles] = useState([]);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
-  const [attendanceRecords, setAttendanceRecords] = useState([]);
   const [notarizing, setNotarizing] = useState(false);
   const [notarizationResult, setNotarizationResult] = useState(null);
   const [showResultsModal, setShowResultsModal] = useState(false);
@@ -22,7 +20,6 @@ const AttendanceVerification = () => {
   useEffect(() => {
     initializeModels();
     loadStoredProfiles();
-    loadAttendanceRecords();
   }, []);
 
   const initializeModels = async () => {
@@ -90,19 +87,6 @@ const AttendanceVerification = () => {
     }
   };
 
-  const loadAttendanceRecords = () => {
-    const records = localStorage.getItem('attendanceRecords');
-    if (records) {
-      setAttendanceRecords(JSON.parse(records));
-    }
-  };
-
-  const saveAttendanceRecord = (record) => {
-    const updatedRecords = [record, ...attendanceRecords];
-    setAttendanceRecords(updatedRecords);
-    localStorage.setItem('attendanceRecords', JSON.stringify(updatedRecords));
-  };
-
   const createAttendanceNotarization = async (attendanceRecord) => {
     setNotarizing(true);
     try {
@@ -128,22 +112,6 @@ const AttendanceVerification = () => {
       if (notarizationData.success) {
         console.log('✅ Attendance notarization created successfully!');
         setNotarizationResult(notarizationData.notarization);
-        
-        // Update attendance record with blockchain proof
-        const updatedRecord = {
-          ...attendanceRecord,
-          blockchainProof: notarizationData.notarization.blockchainProof,
-          notarizationId: notarizationData.notarization.id,
-          notarized: true
-        };
-
-        // Update the stored attendance records with blockchain proof
-        const updatedRecords = attendanceRecords.map(record => 
-          record.id === attendanceRecord.id ? updatedRecord : record
-        );
-        setAttendanceRecords(updatedRecords);
-        localStorage.setItem('attendanceRecords', JSON.stringify(updatedRecords));
-
         return notarizationData.notarization;
       } else {
         throw new Error(notarizationData.error || 'Failed to create notarization');
@@ -205,29 +173,24 @@ const AttendanceVerification = () => {
 
       setVerificationResult(result);
 
-      // Save attendance record
-      const attendanceRecord = {
-        id: Date.now(),
-        profileId: selectedProfile.id,
-        userName: selectedProfile.name,
-        userEmail: selectedProfile.email,
-        timestamp: new Date().toISOString(),
-        success: result.success,
-        confidence: result.confidence,
-        verificationDetails: {
-          descriptorMatch: result.descriptorMatch,
-          geometryMatch: result.geometryMatch,
-          biometricMatch: result.biometricMatch,
-          landmarkMatch: result.landmarkMatch
-        }
-      };
-
-      saveAttendanceRecord(attendanceRecord);
-
       // If attendance verification was successful, create blockchain notarization
       if (result.success) {
         console.log('✅ Attendance verified successfully! Creating blockchain notarization...');
-        await createAttendanceNotarization(attendanceRecord);
+        await createAttendanceNotarization({
+          id: Date.now(),
+          profileId: selectedProfile.id,
+          userName: selectedProfile.name,
+          userEmail: selectedProfile.email,
+          timestamp: new Date().toISOString(),
+          success: result.success,
+          confidence: result.confidence,
+          verificationDetails: {
+            descriptorMatch: result.descriptorMatch,
+            geometryMatch: result.geometryMatch,
+            biometricMatch: result.biometricMatch,
+            landmarkMatch: result.landmarkMatch
+          }
+        });
       }
 
       // Show results modal
@@ -256,27 +219,8 @@ const AttendanceVerification = () => {
 
   return (
     <div className={`min-h-screen bg-gray-50 ${showResultsModal ? 'overflow-hidden' : ''}`}>
-      {/* Header */}
-      <div className={`bg-white shadow-sm border-b transition-all duration-300 ${showResultsModal ? 'filter blur-md opacity-20' : ''}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              🏢 Biometric Attendance Verification
-            </h1>
-            <p className="text-gray-600">
-              Verify your identity using your registered biometric profile for secure attendance tracking.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Attendance Summary */}
-      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 transition-all duration-300 ${showResultsModal ? 'filter blur-md opacity-20' : ''}`}>
-        <AttendanceSummary attendanceRecords={attendanceRecords} />
-      </div>
-
       {/* Main Verification Area - Full Page */}
-      <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${showResultsModal ? 'filter blur-md opacity-20' : ''}`}>
+      <div className={`max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 transition-all duration-300 ${showResultsModal ? 'filter blur-sm opacity-50' : ''}`}>
         <div className="bg-white rounded-xl shadow-xl p-8">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
@@ -378,9 +322,9 @@ const AttendanceVerification = () => {
       {/* Results Modal with Backdrop */}
       {showResultsModal && verificationResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop with enhanced dark overlay */}
+          {/* Backdrop with 50% transparency */}
           <div 
-            className="absolute inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            className="absolute inset-0 bg-white bg-opacity-50"
             onClick={closeResultsModal}
           ></div>
           
