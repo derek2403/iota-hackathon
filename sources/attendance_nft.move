@@ -217,6 +217,58 @@ module clt_tutorial::attendance_nft {
         transfer::transfer(badge, user_did);
     }
 
+    /// Simplified badge minting without TokenPolicy requirement (for demo purposes)
+    public fun mint_attendance_badge_simple(
+        registry: &mut BadgeRegistry,
+        user_did: address,
+        semester: vector<u8>,
+        ctx: &mut TxContext
+    ) {
+        // Only admin can mint badges
+        assert!(tx_context::sender(ctx) == registry.admin, ENotAuthorized);
+
+        // Calculate total CLT balance for user (mock value for demo)
+        let total_clt = calculate_user_clt_balance(user_did, ctx);
+        
+        // Determine badge tier
+        let tier = determine_badge_tier(total_clt);
+        assert!(tier > 0, EInsufficientCLT);
+
+        // Check for duplicate badge assignment
+        let badge_key = create_badge_key(user_did, semester);
+        assert!(!table::contains(&registry.issued_badges, badge_key), EBadgeAlreadyAwarded);
+
+        // Create badge tier info
+        let tier_info = create_tier_info(tier);
+
+        // Mint the badge NFT
+        let badge = AttendanceBadge {
+            id: object::new(ctx),
+            user_did,
+            semester,
+            tier: tier_info,
+            final_clt: total_clt,
+            date_awarded: tx_context::epoch_timestamp_ms(ctx),
+            issuer: tx_context::sender(ctx),
+        };
+
+        // Record the badge issuance
+        table::add(&mut registry.issued_badges, badge_key, tier);
+        registry.total_badges_issued = registry.total_badges_issued + 1;
+
+        // Emit event
+        event::emit(BadgeAwarded {
+            user_did,
+            badge_tier: tier,
+            semester,
+            final_clt: total_clt,
+            timestamp: tx_context::epoch_timestamp_ms(ctx),
+        });
+
+        // Transfer badge to user (non-transferrable)
+        transfer::transfer(badge, user_did);
+    }
+
     /// Check and mint bonus achievements based on attendance patterns
     fun check_and_mint_bonus_achievements(
         registry: &mut BadgeRegistry,
