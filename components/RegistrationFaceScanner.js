@@ -99,19 +99,9 @@ const RegistrationFaceScanner = ({ userInfo, onFaceScanComplete, onSkip }) => {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Secure Your Identity with Biometric Verification
-        </h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Scan your face to create a secure biometric profile that will be linked to your digital identity. 
-          This adds an extra layer of security and helps verify your identity in the future.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="flex justify-center">
         {/* Camera Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
+        <div className="bg-white rounded-lg border border-gray-300 p-6">
           <h3 className="text-xl font-bold mb-4">📷 Biometric Capture</h3>
           
           {!modelsLoaded && (
@@ -120,29 +110,44 @@ const RegistrationFaceScanner = ({ userInfo, onFaceScanComplete, onSkip }) => {
             </div>
           )}
           
-          <div className="text-center mb-6">
-            <Webcam
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              videoConstraints={{
-                width: 720,
-                height: 560,
-                facingMode: "user"
-              }}
-              className="rounded-lg mx-auto w-full"
-            />
+          <div className="flex flex-col items-center justify-center mb-6">
+            <div className="relative">
+              <div className="w-80 h-80 rounded-full overflow-hidden border-4 border-gray-300 bg-gray-100">
+                <Webcam
+                  audio={false}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{
+                    width: 320,
+                    height: 320,
+                    facingMode: "user"
+                  }}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              {/* Camera Icon Button */}
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={generateFaceProfile}
+                  disabled={loading || !modelsLoaded}
+                  className="w-16 h-16 bg-blue-500 hover:bg-blue-700 text-white rounded-full flex items-center justify-center disabled:opacity-50 transition-colors duration-200"
+                >
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-3">
             {!scanCompleted ? (
-              <button
-                onClick={generateFaceProfile}
-                disabled={loading || !modelsLoaded}
-                className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded disabled:opacity-50"
-              >
-                {loading ? 'Processing...' : '📷 Capture Biometric Profile'}
-              </button>
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-3">
+                  Position your face in the circle and click the camera icon to capture
+                </p>
+              </div>
             ) : (
               <button
                 onClick={handleRetake}
@@ -153,102 +158,59 @@ const RegistrationFaceScanner = ({ userInfo, onFaceScanComplete, onSkip }) => {
             )}
           </div>
         </div>
-
-        {/* Results Section */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h3 className="text-xl font-bold mb-4">🔐 Security Profile</h3>
-
-          {loading && (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <p className="mt-2 text-gray-600">Processing biometric data...</p>
-            </div>
-          )}
-
-          {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              <strong>Error:</strong> {error}
-            </div>
-          )}
-
-          {scanCompleted && faceData && (
-            <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 p-4 rounded">
-                <div className="flex items-center mb-2">
-                  <svg className="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  <h4 className="font-bold text-green-800">Biometric Profile Created Successfully!</h4>
-                </div>
-                <p className="text-sm text-green-700">
-                  Detection Confidence: {Math.round(faceData.detectionScore * 100)}%
-                </p>
-              </div>
-
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded">
-                <h4 className="font-bold mb-2">🔒 Security Features</h4>
-                <ul className="text-sm text-blue-700 space-y-1">
-                  <li>✅ Neural network face descriptors</li>
-                  <li>✅ Facial geometry analysis</li>
-                  <li>✅ Biometric landmark detection</li>
-                  <li>✅ Encrypted local storage</li>
-                </ul>
-              </div>
-
-              <div className="bg-gray-50 border border-gray-200 p-4 rounded">
-                <h4 className="font-bold mb-2">📊 Technical Details</h4>
-                <p className="text-xs text-gray-600 mb-2">Biometric Hash Preview:</p>
-                <div className="text-xs font-mono bg-white p-2 rounded border max-h-20 overflow-y-auto">
-                  {encodedData.substring(0, 200)}...
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!scanCompleted && !loading && !error && (
-            <div className="text-center py-8">
-              <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              </div>
-              <p className="text-gray-500">
-                Position your face in the camera frame and click "Capture Biometric Profile" to continue.
-              </p>
-            </div>
-          )}
-        </div>
       </div>
 
+      {/* Security Profile Modal */}
+      {scanCompleted && faceData && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full mx-4">
+            <div className="text-center">
+              <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Biometric Profile Created!</h3>
+              <p className="text-gray-600 mb-6">
+                Detection Confidence: {Math.round(faceData.detectionScore * 100)}%
+              </p>
+              
+              <div className="bg-blue-50 border border-blue-200 p-4 rounded mb-6">
+                <h4 className="font-bold mb-2 text-blue-800">🔐 Biometric Hash</h4>
+                <div className="text-sm font-mono text-blue-700 bg-white p-2 rounded border">
+                  {encodedData.substring(0, 5)}...{encodedData.substring(encodedData.length - 5)}
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleRetake}
+                  className="flex-1 px-4 py-2 bg-gray-500 text-white font-medium rounded hover:bg-gray-600"
+                >
+                  Retake
+                </button>
+                <button
+                  onClick={handleContinue}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700"
+                >
+                  Continue
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Action Buttons */}
-      <div className="mt-8 flex justify-center space-x-4">
-        {scanCompleted ? (
+      <div className="mt-8 flex justify-center">
+        {scanCompleted && (
           <button
             onClick={handleContinue}
             className="px-8 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition duration-150"
           >
             ✅ Continue with Biometric Security
           </button>
-        ) : null}
-        
-        <button
-          onClick={onSkip}
-          className="px-8 py-3 bg-gray-500 text-white font-medium rounded-lg hover:bg-gray-600 transition duration-150"
-        >
-          Skip Biometric Scan
-        </button>
-      </div>
-
-      {/* Information */}
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="font-bold text-blue-800 mb-2">🛡️ Privacy & Security</h4>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Your biometric data is processed locally and stored securely</li>
-          <li>• No facial images are saved, only mathematical descriptors</li>
-          <li>• Data is encrypted and linked to your identity on the blockchain</li>
-          <li>• You can delete this data at any time</li>
-        </ul>
+        )}
       </div>
     </div>
   );
