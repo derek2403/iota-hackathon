@@ -1,13 +1,13 @@
 # 🎓 Decentralized Proof-of-Attendance & Verifiable University Credentials (IOTA Hackathon 2025)
 
-## 1. 🧠 Introduction
+## 🧠 Introduction
 Our project presents a decentralized system that verifies student attendance using face recognition and builds **verifiable academic credentials** on-chain — eliminating manual, spoofable attendance systems and centralized academic records.
 
 This system uses **IOTA L1**, **DIDs**, **face-hashing**, **closed-loop tokens**, and **smart contracts** to transparently reward attendance and build a tamper-proof academic journey for each student.
 
 ---
 
-## 2. ✨ Inspiration
+## ✨ Inspiration
 Most universities still rely on centralized, error-prone attendance and record-keeping. Students often help others "check in" with QR codes or passcodes, which weakens the integrity of attendance-based certifications.
 
 We wanted to:
@@ -18,7 +18,7 @@ We wanted to:
 
 ---
 
-## 3. ❌ Problem
+## ❌ Problem
 - Universities use centralized databases to store attendance and transcripts
 - Fake attendance (QR pass, code sharing) is rampant
 - Students can't easily prove academic records across borders
@@ -26,7 +26,7 @@ We wanted to:
 
 ---
 
-## 4. ✅ Solution
+## ✅ Solution
 We built a decentralized **Proof-of-Attendance System** where:
 - Students **KYC once** and receive an on-chain **DID**
 - Attendance is taken using **Face Recognition**, converted to a **Face Hash**
@@ -39,7 +39,7 @@ We built a decentralized **Proof-of-Attendance System** where:
 
 ---
 
-## 5. 👨‍🎓 Student Flow
+## 👨‍🎓 Student Flow
 
 ```mermaid
 flowchart TD
@@ -57,15 +57,25 @@ flowchart TD
     L --> M[Use CLT to Get Certificate NFT]
     M --> N[Verifiable Student Record]
     
-    style A fill:#e1f5fe
-    style C fill:#f3e5f5
-    style H fill:#e8f5e8
-    style M fill:#fff3e0
+    style A fill:#ffffff,stroke:#000000,stroke-width:3px,color:#000000
+    style B fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style C fill:#4CAF50,stroke:#000000,stroke-width:3px,color:#ffffff
+    style D fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style E fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style F fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style G fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style H fill:#2196F3,stroke:#000000,stroke-width:3px,color:#ffffff
+    style I fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style J fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style K fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style L fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
+    style M fill:#FF9800,stroke:#000000,stroke-width:3px,color:#ffffff
+    style N fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
 ```
 
 ---
 
-## 6. 🛠️ Tech Stack
+## 🛠️ Tech Stack
 
 | Component             | Tool/Framework                  |
 | --------------------- | ------------------------------- |
@@ -83,7 +93,7 @@ flowchart TD
 
 ---
 
-## 7. 📁 Important Code Directory Structure
+##  📁 Important Code Directory Structure
 
 ```bash
 project-root/
@@ -111,7 +121,7 @@ project-root/
 
 ---
 
-## 8. 🚀 Future Implementations
+## 🚀 Future Implementations
 
 * ✅ NFC Tap-to-Attend (UID maps to DID)
 * ✅ Integrate zk-KYC for privacy-preserving verification
