@@ -1,4 +1,4 @@
-// not needed
+// optional setup file
 
 import { IotaClient, getFullnodeUrl } from "@iota/iota-sdk/client";
 import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
