@@ -55,45 +55,9 @@ async function showCurrentTokens() {
   }
 }
 
-async function showSystemStats() {
-  console.log("\n📊 SYSTEM STATISTICS");
-  console.log("====================");
-
-  try {
-    const { client, adminAddress } = await initializeSystem();
-
-    const result = await client.devInspectTransactionBlock({
-      transactionBlock: (() => {
-        const tx = new Transaction();
-        tx.moveCall({
-          target: `${CONFIG.packageId}::attendance_system::get_system_stats`,
-          arguments: [tx.object(CONFIG.objectIds.attendanceSystem)],
-        });
-        return tx;
-      })(),
-      sender: adminAddress,
-    });
-
-    const [attendances, tokens, paused] = result.results[0].returnValues;
-
-    console.log(`📚 Total Attendances Recorded: ${parseInt(attendances[0])}`);
-    console.log(`🪙 Total Tokens Issued: ${parseInt(tokens[0])}`);
-    console.log(`⏸️ System Paused: ${paused[0][0] === 1 ? "Yes" : "No"}`);
-
-    return {
-      attendances: parseInt(attendances[0]),
-      tokens: parseInt(tokens[0]),
-      paused: paused[0][0] === 1,
-    };
-  } catch (error) {
-    console.error("❌ Error checking stats:", error.message);
-    return null;
-  }
-}
-
 async function slashToken(tokenId) {
-  console.log("\n⚠️ DEMONSTRATING TOKEN SLASHING");
-  console.log("===============================");
+  console.log("\n⚠️ SLASHING TOKEN");
+  console.log("=================");
   console.log(`🎯 Slashing token: ${tokenId}`);
 
   try {
@@ -133,46 +97,32 @@ async function slashToken(tokenId) {
   }
 }
 
-async function runFinalProof() {
-  console.log("🏆 UNIVERSITY ATTENDANCE SYSTEM - FINAL PROOF OF CONCEPT");
-  console.log("=========================================================");
-  console.log("");
-  console.log(
-    "Demonstrating your fully working CLT (Closed-Loop Token) system!"
-  );
+async function main() {
+  console.log("🏆 UNIVERSITY ATTENDANCE TOKEN - SLASHING DEMO");
+  console.log("=============================================");
   console.log("");
 
   try {
     // Step 1: Show current tokens
     const currentTokens = await showCurrentTokens();
 
-    // Step 2: Show system statistics
-    const stats = await showSystemStats();
-
-    // Step 3: Demonstrate slashing (if we have tokens)
+    // Step 2: Slash a token if any exist
     if (currentTokens.length > 0) {
-      console.log("");
-      console.log("🎯 STEP 3: Demonstrating penalty system...");
+      console.log("\n🎯 Slashing the first available token...");
       await slashToken(currentTokens[0].data.objectId);
 
-      // Step 4: Show updated balances
-      console.log("");
-      console.log("📊 AFTER PENALTY:");
-      console.log("=================");
-      const tokensAfterSlash = await showCurrentTokens();
-      const statsAfterSlash = await showSystemStats();
-
-      console.log("");
-      console.log("📈 CHANGES:");
-      console.log("===========");
-      console.log(
-        `💰 Tokens: ${currentTokens.length} → ${tokensAfterSlash.length}`
-      );
-      console.log(`📚 Total processed: ${statsAfterSlash.tokens} tokens`);
+      // Show updated balance
+      console.log("\n📊 UPDATED BALANCE:");
+      console.log("==================");
+      await showCurrentTokens();
+    } else {
+      console.log("\n❌ No tokens available to slash!");
+      console.log("First mint some tokens using mint-token.js");
     }
   } catch (error) {
-    console.error("💥 Proof failed:", error);
+    console.error("💥 Operation failed:", error);
   }
 }
 
-runFinalProof().catch(console.error);
+// Run the demo
+main().catch(console.error);
