@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Head from "next/head";
+import Link from "next/link";
 
 // Consistent date formatting function to avoid hydration errors
 const formatDate = (dateString) => {
@@ -331,9 +332,30 @@ export default function SummaryPage() {
 
           {/* NFT Collection */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 border-2 border-sky-200 hover:shadow-3xl transition-all duration-300">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              🖼️ NFT Collection
-            </h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 text-center">
+                🖼️ NFT Collection
+              </h2>
+              <Link
+                href="/nft"
+                className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+              >
+                <svg
+                  className="w-5 h-5 mr-2"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                  />
+                </svg>
+                NFT Store
+              </Link>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {ownedNFTs.map((nft) => (
                 <div

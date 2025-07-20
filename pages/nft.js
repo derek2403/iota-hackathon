@@ -1,5 +1,71 @@
 import { useState, useEffect } from "react";
 import Head from "next/head";
+import { IotaClient, getFullnodeUrl } from "@iota/iota-sdk/client";
+import { Ed25519Keypair } from "@iota/iota-sdk/keypairs/ed25519";
+import { Transaction } from "@iota/iota-sdk/transactions";
+
+// Configuration from mint-nft.js
+const CONFIG = {
+  packageId:
+    "0xa3e446eecba022d0c60d6243e8dfe8763820764e23c3a2870fa6b324f411fc64",
+  keys: {
+    adminPrivateKey: "ADbUxGsOWXMH52/NQ7/ZL+urTGpNzJ8lpCfiVRV95EGV",
+  },
+};
+
+// Initialize system function from mint-nft.js
+async function initializeSystem() {
+  const client = new IotaClient({ url: getFullnodeUrl("testnet") });
+  const adminKeyBytes = Buffer.from(CONFIG.keys.adminPrivateKey, "base64");
+  const adminPrivateKeyBytes = adminKeyBytes.slice(1);
+  const adminKeypair = Ed25519Keypair.fromSecretKey(adminPrivateKeyBytes);
+  const adminAddress = adminKeypair.getPublicKey().toIotaAddress();
+  return { client, adminKeypair, adminAddress };
+}
+
+// Mint NFT function from mint-nft.js
+async function mintNFT(name, description, imageUrl) {
+  console.log("\n🎨 MINTING NEW NFT");
+  console.log("=================");
+  console.log(`Name: ${name}`);
+  console.log(`Description: ${description}`);
+  console.log(`Image URL: ${imageUrl}`);
+
+  try {
+    const { client, adminKeypair } = await initializeSystem();
+    const transaction = new Transaction();
+
+    transaction.moveCall({
+      target: `${CONFIG.packageId}::devnet_nft::mint_to_sender`,
+      arguments: [
+        transaction.pure.vector(
+          "u8",
+          Array.from(new TextEncoder().encode(name))
+        ),
+        transaction.pure.vector(
+          "u8",
+          Array.from(new TextEncoder().encode(description))
+        ),
+        transaction.pure.vector(
+          "u8",
+          Array.from(new TextEncoder().encode(imageUrl))
+        ),
+      ],
+    });
+
+    const result = await client.signAndExecuteTransaction({
+      signer: adminKeypair,
+      transaction,
+    });
+
+    console.log("✅ NFT minted successfully!");
+    console.log(`📋 Transaction: ${result.digest}`);
+    return result;
+  } catch (error) {
+    console.error("❌ Minting failed:", error.message);
+    return null;
+  }
+}
 
 export default function NFTPage() {
   const [mintingStates, setMintingStates] = useState({
@@ -22,16 +88,41 @@ export default function NFTPage() {
 
     setMintingStates((prev) => ({ ...prev, [nftType]: true }));
 
-    // Simulate minting process
-    setTimeout(() => {
+    try {
+      // Find the NFT data for this type
+      const nftData = nftRewards.find((nft) => nft.id === nftType);
+
+      // Prepare NFT metadata
+      const name = nftData.title;
+      const description = nftData.description;
+      const imageUrl = `https://example.com/nft/${nftType}.jpg`; // You can customize this
+
+      console.log(`🎨 Starting NFT mint for: ${name}`);
+
+      // Call the actual mint function
+      const result = await mintNFT(name, description, imageUrl);
+
+      if (result) {
+        // Success - deduct tokens and show success
+        setTokenBalance((prev) => prev - cost);
+        alert(
+          `${name} NFT minted successfully! 🎉\n` +
+            `Transaction: ${result.digest}\n` +
+            `Tokens spent: ${cost}\n` +
+            `Remaining balance: ${tokenBalance - cost}`
+        );
+        console.log("✅ NFT minted successfully:", result);
+      } else {
+        // Failed - show error
+        alert(`❌ Failed to mint ${name} NFT. Please try again.`);
+        console.error("❌ NFT minting failed");
+      }
+    } catch (error) {
+      console.error("Error during NFT minting:", error);
+      alert(`❌ Error minting NFT: ${error.message}`);
+    } finally {
       setMintingStates((prev) => ({ ...prev, [nftType]: false }));
-      setTokenBalance((prev) => prev - cost); // Deduct tokens
-      alert(
-        `${nftType} NFT minted successfully! 🎉\nTokens spent: ${cost}\nRemaining balance: ${
-          tokenBalance - cost
-        }`
-      );
-    }, 2000);
+    }
   };
 
   const nftRewards = [
