@@ -27,17 +27,30 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [storedProfiles, setStoredProfiles] = useState([]);
-  const [selectedProfile, setSelectedProfile] = useState(null);
   const [verificationResult, setVerificationResult] = useState(null);
   const [notarizing, setNotarizing] = useState(false);
   const [notarizationResult, setNotarizationResult] = useState(null);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [tokenDetails, setTokenDetails] = useState(null);
 
+  // Hardcoded profile - remove storedProfiles and selectedProfile states
+  const hardcodedProfile = {
+    id: "default",
+    name: "John Doe",
+    email: "john.doe@example.com",
+    data: {
+      userInfo: {
+        name: "John Doe",
+        email: "john.doe@example.com"
+      },
+      faceData: "mock-face-data-for-demo"
+    },
+    source: "Hardcoded Profile"
+  };
+
   useEffect(() => {
     initializeModels();
-    loadStoredProfiles();
+    // Remove loadStoredProfiles() call
   }, []);
 
   const initializeModels = async () => {
@@ -52,74 +65,22 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
     }
   };
 
-  const loadStoredProfiles = () => {
-    try {
-      const profiles = [];
-      
-      // Get general biometric data
-      const generalData = localStorage.getItem("userBiometricData");
-      if (generalData) {
-        const parsed = JSON.parse(generalData);
-        profiles.push({
-          id: "general",
-          name: parsed.userInfo?.name || "Unknown User",
-          email: parsed.userInfo?.email || "No Email",
-          data: parsed,
-          source: "General Profile",
-        });
-      }
-
-      // Get all biometric profiles for specific users
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith("biometric_")) {
-          const data = localStorage.getItem(key);
-          if (data) {
-            try {
-              const parsed = JSON.parse(data);
-              const email = key.replace("biometric_", "");
-              profiles.push({
-                id: email,
-                name: parsed.userInfo?.name || "Unknown User",
-                email: email,
-                data: parsed,
-                source: "User Specific Profile",
-              });
-            } catch (e) {
-              console.warn("Failed to parse biometric data for key:", key);
-            }
-          }
-        }
-      }
-
-      // Remove duplicates based on email
-      const uniqueProfiles = profiles.filter(
-        (profile, index, self) =>
-          index === self.findIndex((p) => p.email === profile.email)
-      );
-
-      setStoredProfiles(uniqueProfiles);
-      console.log("Loaded stored biometric profiles:", uniqueProfiles);
-    } catch (error) {
-      console.error("Error loading stored profiles:", error);
-      setError("Failed to load stored biometric profiles");
-    }
-  };
+  // Remove loadStoredProfiles function entirely
 
   const createAttendanceNotarization = async (attendanceRecord) => {
     setNotarizing(true);
     try {
       console.log("🔗 Creating blockchain notarization for attendance...");
-      
+
       const response = await fetch("/api/create-attendance-notarization", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           attendanceRecord: {
             ...attendanceRecord,
-            biometricHash: selectedProfile.data.faceData.substring(0, 100),
+            biometricHash: hardcodedProfile.data.faceData.substring(0, 100),
             location: "Office/Remote Location",
             device: navigator.userAgent.includes("Mobile")
               ? "Mobile Device"
@@ -154,11 +115,6 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
       return;
     }
 
-    if (!selectedProfile) {
-      setError("Please select a profile to verify against");
-      return;
-    }
-
     const imageSrc = webcamRef.current.getScreenshot();
     if (!imageSrc) {
       setError("Failed to capture image");
@@ -170,7 +126,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
     setNotarizationResult(null);
 
     try {
-      // Generate perfect match result for demo/testing
+      // Generate perfect match result for demo/testing using hardcoded profile
       const result = {
         overallMatch: true,
         confidence: 100,
@@ -179,8 +135,8 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
         biometricMatch: true,
         landmarkMatch: true,
         timestamp: new Date().toLocaleString(),
-        currentFaceData: selectedProfile.data.faceData, // Use the same data for perfect match
-        verifiedProfile: selectedProfile,
+        currentFaceData: hardcodedProfile.data.faceData, // Use hardcoded data
+        verifiedProfile: hardcodedProfile, // Use hardcoded profile
         success: true,
       };
 
@@ -197,17 +153,17 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
             console.log("🔗 Creating blockchain notarization...");
             try {
               const notarizationResult = await createAttendanceNotarization({
-        id: Date.now(),
-        profileId: selectedProfile.id,
-        userName: selectedProfile.name,
-        userEmail: selectedProfile.email,
-        timestamp: new Date().toISOString(),
-        success: result.success,
-        confidence: result.confidence,
-        verificationDetails: {
-          descriptorMatch: result.descriptorMatch,
-          geometryMatch: result.geometryMatch,
-          biometricMatch: result.biometricMatch,
+                id: Date.now(),
+                profileId: hardcodedProfile.id, // Use hardcoded profile
+                userName: hardcodedProfile.name, // Use hardcoded profile
+                userEmail: hardcodedProfile.email, // Use hardcoded profile
+                timestamp: new Date().toISOString(),
+                success: result.success,
+                confidence: result.confidence,
+                verificationDetails: {
+                  descriptorMatch: result.descriptorMatch,
+                  geometryMatch: result.geometryMatch,
+                  biometricMatch: result.biometricMatch,
                   landmarkMatch: result.landmarkMatch,
                 },
               });
@@ -236,7 +192,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
 
           // Process 2: Mint attendance token
           (async () => {
-            console.log("�� Minting attendance token...");
+            console.log(" Minting attendance token...");
             try {
               const { adminAddress } = await initializeSystem();
               const courseId = "CS101";
@@ -250,7 +206,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                 const tokenInfo = {
                   mintResult,
                   courseId,
-                  recipient: selectedProfile.name,
+                  recipient: hardcodedProfile.name, // Use hardcoded profile
                   timestamp: new Date().toISOString(),
                   type: "ATTENDANCE_TOKEN",
                   packageId: CONFIG.packageId,
@@ -265,7 +221,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                 const mockTokenInfo = {
                   mintResult: { success: true, digest: "demo-" + Date.now() },
                   courseId,
-                  recipient: selectedProfile.name,
+                  recipient: hardcodedProfile.name, // Use hardcoded profile
                   timestamp: new Date().toISOString(),
                   type: "ATTENDANCE_TOKEN",
                   packageId: CONFIG.packageId,
@@ -281,7 +237,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
               const mockTokenInfo = {
                 mintResult: { success: true, digest: "demo-" + Date.now() },
                 courseId: "CS101",
-                recipient: selectedProfile.name,
+                recipient: hardcodedProfile.name, // Use hardcoded profile
                 timestamp: new Date().toISOString(),
                 type: "ATTENDANCE_TOKEN",
                 packageId: CONFIG.packageId,
@@ -330,8 +286,8 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
         biometricMatch: true,
         landmarkMatch: true,
         timestamp: new Date().toLocaleString(),
-        currentFaceData: selectedProfile.data.faceData,
-        verifiedProfile: selectedProfile,
+        currentFaceData: hardcodedProfile.data.faceData, // Use hardcoded profile
+        verifiedProfile: hardcodedProfile, // Use hardcoded profile
         success: true,
         tokenMinted: true,
       };
@@ -349,8 +305,8 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
     setVerificationResult(null);
     setNotarizationResult(null);
     setError("");
-    setSelectedProfile(null);
     setShowResultsModal(false);
+    // Remove setSelectedProfile(null) since we don't have selectedProfile anymore
   };
 
   const closeResultsModal = () => {
@@ -370,52 +326,29 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
         }`}
       >
         <div className="bg-white rounded-xl shadow-xl p-8">
-      <div className="text-center mb-8">
+          <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
               📷 Identity Verification
             </h2>
             <p className="text-gray-600">
-              Select your profile and verify your attendance using facial
-              recognition
-        </p>
-      </div>
-            
-            {!modelsLoaded && (
+              Verify your attendance using facial recognition
+            </p>
+          </div>
+
+          {!modelsLoaded && (
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded-lg mb-6 text-center">
               <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-yellow-600 mr-2"></div>
-                Loading face recognition models... This may take a moment.
-              </div>
-            )}
-            
+              Loading face recognition models... This may take a moment.
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-lg mb-6">
               <strong>Error:</strong> {error}
             </div>
           )}
 
-            {/* Profile Selection */}
-          <div className="mb-8">
-            <label className="block text-lg font-medium text-gray-700 mb-3">
-                Select Your Profile:
-              </label>
-              <select
-              value={selectedProfile?.id || ""}
-                onChange={(e) => {
-                const profile = storedProfiles.find(
-                  (p) => p.id === e.target.value
-                );
-                  setSelectedProfile(profile || null);
-                }}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
-              >
-                <option value="">Select a registered profile...</option>
-                {storedProfiles.map((profile) => (
-                  <option key={profile.id} value={profile.id}>
-                    {profile.name} ({profile.email})
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Remove Profile Selection section entirely */}
 
           {/* Camera Section */}
           <div className="mb-8">
@@ -438,7 +371,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
           <div className="flex gap-4 justify-center">
             <button
               onClick={verifyAttendance}
-              disabled={loading || !modelsLoaded || !selectedProfile}
+              disabled={loading || !modelsLoaded} // Remove !selectedProfile condition
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
             >
               {loading ? (
@@ -468,7 +401,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
         </div>
       </div>
 
-      {/* Results Modal with Backdrop */}
+      {/* Results Modal with Backdrop - Keep the existing modal code unchanged */}
       {showResultsModal && verificationResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop with 50% transparency */}
