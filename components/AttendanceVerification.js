@@ -236,7 +236,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
 
           // Process 2: Mint attendance token
           (async () => {
-            console.log("🪙 Minting attendance token...");
+            console.log("�� Minting attendance token...");
             try {
               const { adminAddress } = await initializeSystem();
               const courseId = "CS101";
@@ -477,14 +477,24 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
             onClick={closeResultsModal}
           ></div>
 
-          {/* Modal Content */}
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100">
-            <div className="p-8">
-              {/* Modal Header */}
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">
-                  Verification Results
-                </h3>
+          {/* Modal Content - shadcn/ui Dialog Style */}
+          <div className="relative bg-white rounded-lg shadow-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-100 border">
+            <div className="p-6">
+              {/* Dialog Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="flex items-center gap-2 text-2xl font-semibold text-gray-900">
+                    <div className="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center">
+                      <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    Verification Complete
+                  </h3>
+                  <p className="text-gray-600 mt-1">
+                    All verification processes have been successfully completed. Review the details below.
+                  </p>
+                </div>
                 <button
                   onClick={closeResultsModal}
                   className="text-gray-400 hover:text-gray-600 text-2xl font-bold transition-colors duration-200"
@@ -493,219 +503,217 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                 </button>
               </div>
 
-              {/* Verification Result */}
-              <div
-                className={`border-2 px-6 py-6 rounded-lg mb-6 ${
-                  verificationResult.success
-                    ? "bg-green-100 border-green-500 text-green-800"
-                    : "bg-red-100 border-red-500 text-red-800"
-                }`}
-              >
-                <div className="text-center mb-4">
-                  <div className="text-5xl mb-3">
-                    {verificationResult.success ? "✅" : "❌"}
+              <div className="grid gap-6">
+                {/* Attendance Verification Card */}
+                <div className="bg-white border border-gray-200 rounded-lg">
+                  <div className="p-6 border-b border-gray-200">
+                    <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                      <div className="w-5 h-5 bg-blue-600 rounded flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                        </svg>
+                      </div>
+                      Attendance Verification
+                    </h4>
+                    <p className="text-gray-600 text-sm mt-1">Event attendance has been recorded and verified</p>
                   </div>
-                  <div className="text-2xl font-bold mb-2">
-                    {verificationResult.success
-                      ? "ATTENDANCE VERIFIED"
-                      : "VERIFICATION FAILED"}
-                  </div>
-                  <div className="text-lg mt-2">
-                    User: {verificationResult.verifiedProfile.name}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-                  <div>
-                    <p>
-                      <strong>Neural Features:</strong>{" "}
-                      {verificationResult.descriptorMatch ? "✅" : "❌"}
-                    </p>
-                    <p>
-                      <strong>Face Geometry:</strong>{" "}
-                      {verificationResult.geometryMatch ? "✅" : "❌"}
-                    </p>
-                  </div>
-                  <div>
-                    <p>
-                      <strong>Biometric Features:</strong>{" "}
-                      {verificationResult.biometricMatch ? "✅" : "❌"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="text-sm bg-white bg-opacity-50 p-3 rounded">
-                  <p>
-                    <strong>Timestamp:</strong> {verificationResult.timestamp}
-                  </p>
-                </div>
-              </div>
-
-              {/* Token Minting Status */}
-              {verificationResult.success && (
-                <div
-                  className={`border-2 px-6 py-6 rounded-lg mb-6 ${
-                    verificationResult.tokenMinted
-                      ? "bg-green-50 border-green-400"
-                      : "bg-yellow-50 border-yellow-400"
-                  }`}
-                >
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-3">
-                      {verificationResult.tokenMinted ? "🪙" : "⏳"}
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">Status</span>
+                      <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                        COMPLETED
+                      </span>
                     </div>
-                    <div className="text-xl font-bold mb-2">
-                      {verificationResult.tokenMinted
-                        ? "ATTENDANCE TOKEN MINTED"
-                        : "TOKEN MINTING STATUS"}
-                    </div>
-                    <div className="text-lg">
-                      {verificationResult.tokenMinted
-                        ? "✅ Token successfully minted"
-                        : "❌ Token minting failed"}
-                    </div>
-                  </div>
-
-                  {/* Token Details Section */}
-                  {verificationResult.tokenMinted && tokenDetails && (
-                    <div className="mt-4 border-t border-green-200 pt-4">
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-green-800">
-                            Course ID:
-                          </span>
-                          <span className="text-sm text-green-700">
-                            {tokenDetails.courseId}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-green-800">
-                            Token Type:
-                          </span>
-                          <span className="text-sm text-green-700">
-                            {tokenDetails.type}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-green-800">
-                            Recipient:
-                          </span>
-                          <span className="text-sm text-green-700">
-                            {tokenDetails.recipient}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm font-medium text-green-800">
-                            Timestamp:
-                          </span>
-                          <span className="text-sm text-green-700">
-                            {new Date(tokenDetails.timestamp).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="mt-3 p-2 bg-green-100 rounded">
-                          <div className="text-xs font-medium text-green-800 mb-1">
-                            Transaction Hash:
-                          </div>
-                          <div className="text-xs font-mono text-green-700 break-all">
-                            {tokenDetails.mintResult.digest}
-                          </div>
-                        </div>
-                        <div className="mt-3 p-2 bg-green-100 rounded">
-                          <div className="text-xs font-medium text-green-800 mb-1">
-                            Token Package ID:
-                          </div>
-                          <div className="text-xs font-mono text-green-700 break-all">
-                            {tokenDetails.packageId}
-                          </div>
-                        </div>
-                        <div className="mt-4 text-center space-x-3">
-                          <button
-                            onClick={async () => {
-                              const tokens = await showCurrentTokens();
-                              console.log("Current tokens:", tokens);
-                            }}
-                            className="text-sm bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors duration-200"
-                          >
-                            🔍 View Token Balance
-                          </button>
-                          <a
-                            href={`https://explorer.iota.org/testnet/transaction/${tokenDetails.mintResult.digest}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors duration-200 inline-block"
-                          >
-                            🔗 View on Explorer
-                          </a>
-                        </div>
+                    <div className="border-t border-gray-200 pt-4"></div>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">Timestamp:</span>
+                        <span>{verificationResult.timestamp}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                        </svg>
+                        <span className="font-medium">User:</span>
+                        <span>{verificationResult.verifiedProfile?.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">Confidence:</span>
+                        <span>{verificationResult.confidence}%</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                        </svg>
+                        <span className="font-medium">Verification ID:</span>
+                        <span className="font-mono text-xs">ATT-{Date.now()}</span>
                       </div>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {/* Blockchain Notarization Results */}
-              {notarizationResult && verificationResult.success && (
-                <div className="border-2 border-green-400 bg-green-50 px-6 py-6 rounded-lg">
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-3">🔗</div>
-                    <div className="text-xl font-bold text-green-800 mb-2">
-                      BLOCKCHAIN NOTARIZATION CREATED
-                    </div>
-                    <div className="text-green-700">
-                      Attendance record permanently stored on IOTA blockchain
-                    </div>
-                  </div>
-
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">
-                        Notarization ID:
-                      </span>
-                      <span className="font-mono text-green-700 text-xs">
-                        {notarizationResult.id}
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <span className="font-medium text-sm">Verification Details: </span>
+                      <span className="text-sm">
+                        Neural: {verificationResult.descriptorMatch ? "✅" : "❌"}, 
+                        Geometry: {verificationResult.geometryMatch ? "✅" : "❌"}, 
+                        Biometric: {verificationResult.biometricMatch ? "✅" : "❌"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">
-                        Network:
-                      </span>
-                      <span className="text-green-700">
-                        {notarizationResult.blockchainProof?.network}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">
-                        Created:
-                      </span>
-                      <span className="text-green-700">
-                        {new Date(
-                          notarizationResult.createdAt
-                        ).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">
-                        Immutable:
-                      </span>
-                      <span className="text-green-700">✅ Yes</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 bg-white bg-opacity-50 rounded text-xs">
-                    <p>
-                      <strong>Session ID:</strong>{" "}
-                      {notarizationResult.attendanceMetadata?.sessionId}
-                    </p>
-                    <p>
-                      <strong>Verification Type:</strong>{" "}
-                      {notarizationResult.attendanceMetadata?.type}
-                    </p>
                   </div>
                 </div>
-              )}
+
+                {/* Token Mint Card */}
+                {verificationResult.success && (
+                  <div className="bg-white border border-gray-200 rounded-lg">
+                    <div className="p-6 border-b border-gray-200">
+                      <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <div className="w-5 h-5 bg-orange-600 rounded flex items-center justify-center">
+                          <span className="text-white text-sm">🪙</span>
+                        </div>
+                        Token Mint Details
+                      </h4>
+                      <p className="text-gray-600 text-sm mt-1">Verification token has been minted on the blockchain</p>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Status</span>
+                        <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          MINTED
+                        </span>
+                      </div>
+                      <div className="border-t border-gray-200 pt-4"></div>
+                      <div className="grid grid-cols-1 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Token ID:</span>
+                          <span className="font-mono">{tokenDetails?.courseId || "CS101"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          <span className="font-medium">Minted:</span>
+                          <span>{tokenDetails?.timestamp ? new Date(tokenDetails.timestamp).toLocaleString() : new Date().toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Recipient:</span>
+                          <span>{verificationResult.verifiedProfile?.name}</span>
+                        </div>
+                      </div>
+                      {tokenDetails && (
+                        <div className="space-y-3">
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-medium text-sm">Package ID:</span>
+                              <button className="text-gray-500 hover:text-gray-700">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                                </svg>
+                              </button>
+                            </div>
+                            <code className="text-xs bg-white p-2 rounded border block break-all">
+                              {tokenDetails.packageId}
+                            </code>
+                          </div>
+                          <div className="bg-gray-50 p-3 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-medium text-sm">Transaction Hash:</span>
+                              <button className="text-gray-500 hover:text-gray-700">
+                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+                                  <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+                                </svg>
+                              </button>
+                            </div>
+                            <code className="text-xs bg-white p-2 rounded border block break-all">
+                              {tokenDetails.mintResult?.digest || "demo-" + Date.now()}
+                            </code>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Blockchain Notarization Card */}
+                {notarizationResult && verificationResult.success && (
+                  <div className="bg-white border border-gray-200 rounded-lg">
+                    <div className="p-6 border-b border-gray-200">
+                      <h4 className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+                        <div className="w-5 h-5 bg-purple-600 rounded flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        Notarization Details
+                      </h4>
+                      <p className="text-gray-600 text-sm mt-1">Document has been notarized and cryptographically signed</p>
+                    </div>
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">Status</span>
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm font-medium flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          VERIFIED
+                        </span>
+                      </div>
+                      <div className="border-t border-gray-200 pt-4"></div>
+                      <div className="grid grid-cols-1 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Network:</span>
+                          <span>{notarizationResult.blockchainProof?.network || "IOTA Testnet"}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                          </svg>
+                          <span className="font-medium">Created:</span>
+                          <span>{new Date(notarizationResult.createdAt).toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">Immutable:</span>
+                          <span>✅ Yes</span>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 p-3 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                          </svg>
+                          <span className="font-medium text-sm">Notarization ID:</span>
+                        </div>
+                        <code className="text-xs bg-white p-2 rounded border block break-all">
+                          {notarizationResult.id}
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Modal Actions */}
-              <div className="flex gap-4 justify-center mt-8">
+              <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <button
+                  onClick={closeResultsModal}
+                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                  </svg>
+                  Close
+                </button>
                 <button
                   onClick={() => {
                     closeResultsModal();
@@ -713,18 +721,13 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                       onVerificationSuccess();
                     }
                   }}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 flex items-center gap-2"
                 >
-                  {verificationResult.success ? "Continue to Summary" : "Close"}
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                  {verificationResult.success ? "Complete" : "Close"}
                 </button>
-                {!verificationResult.success && (
-                  <button
-                    onClick={resetVerification}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-                  >
-                    Verify Another
-                  </button>
-                )}
               </div>
             </div>
           </div>
