@@ -1,447 +1,254 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Head from 'next/head';
 
-export default function NFT() {
-  const [operation, setOperation] = useState('mint');
-  const [userAddress, setUserAddress] = useState('');
-  const [nftName, setNftName] = useState('My Sponsored NFT');
-  const [nftDescription, setNftDescription] = useState('An awesome NFT minted with gas station sponsorship');
-  const [nftUrl, setNftUrl] = useState('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400');
-  const [nftObjectId, setNftObjectId] = useState('');
-  const [recipientAddress, setRecipientAddress] = useState('');
-  const [newDescription, setNewDescription] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
+export default function NFTPage() {
+  const [mintingStates, setMintingStates] = useState({
+    certificate: false,
+    freeMeal: false,
+    voucher1: false,
+    voucher2: false,
+  });
 
-  // Sample user address for testing
-  const sampleAddress = '0xbe44bbcb5e7ab07670d2dbef90eda4ab73a9e0550facf22c329d90f4dc1ac0d7';
+  // Token balance state
+  const [tokenBalance, setTokenBalance] = useState(1250); // Initial balance
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setResult(null);
+  const handleMint = async (nftType, cost) => {
+    if (tokenBalance < cost) {
+      alert(`Insufficient tokens! You need ${cost} tokens but only have ${tokenBalance}.`);
+      return;
+    }
 
-    try {
-      const requestBody = {
-        userAddress: userAddress || sampleAddress,
-        operation,
-        nftName,
-        nftDescription,
-        nftUrl,
-      };
+    setMintingStates(prev => ({ ...prev, [nftType]: true }));
+    
+    // Simulate minting process
+    setTimeout(() => {
+      setMintingStates(prev => ({ ...prev, [nftType]: false }));
+      setTokenBalance(prev => prev - cost); // Deduct tokens
+      alert(`${nftType} NFT minted successfully! 🎉\nTokens spent: ${cost}\nRemaining balance: ${tokenBalance - cost}`);
+    }, 2000);
+  };
 
-      // Add operation-specific fields
-      if (operation === 'transfer') {
-        requestBody.nftObjectId = nftObjectId;
-        requestBody.recipientAddress = recipientAddress;
-      } else if (operation === 'update') {
-        requestBody.nftObjectId = nftObjectId;
-        requestBody.newDescription = newDescription;
-      } else if (operation === 'burn') {
-        requestBody.nftObjectId = nftObjectId;
-      }
+  const nftRewards = [
+    {
+      id: 'certificate',
+      title: 'Achievement Certificate',
+      description: 'Proof of course completion and academic excellence',
+      color: 'bg-gradient-to-br from-sky-300 via-blue-400 to-indigo-500',
+      borderColor: 'border-sky-300',
+      buttonColor: 'from-sky-400 via-blue-500 to-indigo-600',
+      glowColor: 'shadow-sky-200/50',
+      icon: (
+        <svg className="w-20 h-20 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z" />
+          <path d="M8,12H16V14H8V12M8,16H13V18H8V16M8,8H16V10H8V8Z" />
+        </svg>
+      ),
+      rarity: 'Legendary',
+      benefit: 'Official course completion certificate',
+      cost: 500
+    },
+    {
+      id: 'freeMeal',
+      title: 'Free Meal Voucher',
+      description: 'Enjoy a complimentary meal at the campus cafeteria',
+      color: 'bg-gradient-to-br from-cyan-300 via-sky-400 to-blue-500',
+      borderColor: 'border-cyan-300',
+      buttonColor: 'from-cyan-400 via-sky-500 to-blue-600',
+      glowColor: 'shadow-cyan-200/50',
+      icon: (
+        <svg className="w-20 h-20 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8.1,13.34L3.91,9.16C2.35,7.59 2.35,5.06 3.91,3.5L10.93,10.5L8.1,13.34M14.88,11.53C16.87,12.06 18.6,13.5 19.65,15.41C21.55,18.5 18.5,21.55 15.41,19.65C13.5,18.6 12.06,16.87 11.53,14.88L18.36,8.05C19.92,6.5 19.92,3.91 18.36,2.36C16.8,0.8 14.21,0.8 12.66,2.36L8.1,6.91L1.11,13.9C0.74,14.27 0.74,14.87 1.11,15.24L8.5,22.63C8.87,23 9.47,23 9.84,22.63L14.88,17.59V11.53Z" />
+        </svg>
+      ),
+      rarity: 'Common',
+      benefit: 'Free variety of meal at campus cafeteria',
+      cost: 100
+    },
+    {
+      id: 'voucher1',
+      title: 'Study Materials Voucher',
+      description: 'Access to premium learning resources and materials',
+      color: 'bg-gradient-to-br from-sky-200 via-cyan-400 to-teal-500',
+      borderColor: 'border-sky-300',
+      buttonColor: 'from-sky-400 via-cyan-500 to-teal-600',
+      glowColor: 'shadow-sky-200/50',
+      icon: (
+        <svg className="w-20 h-20 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M19,3H5C3.9,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.9 20.1,3 19,3M5,19V5H9V12L11.5,10.5L14,12V5H19V19H5Z" />
+        </svg>
+      ),
+      rarity: 'Rare',
+      benefit: 'Premium variety of study materials access',
+      cost: 250
+    },
+    {
+      id: 'voucher2',
+      title: 'Library Extension Pass',
+      description: 'Extended library hours and premium section access',
+      color: 'bg-gradient-to-br from-blue-300 via-sky-400 to-cyan-500',
+      borderColor: 'border-blue-300',
+      buttonColor: 'from-blue-400 via-sky-500 to-cyan-600',
+      glowColor: 'shadow-blue-200/50',
+      icon: (
+        <svg className="w-20 h-20 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M12,3L1,9L12,15L21,10.09V17H23V9M5,13.18V17.18L12,21L19,17.18V13.18L12,17L5,13.18Z" />
+        </svg>
+      ),
+      rarity: 'Epic',
+      benefit: '24/7 library access + premium sections',
+      cost: 350
+    }
+  ];
 
-      const response = await fetch('/api/nft-sponsored', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setResult(data);
-      } else {
-        setError(data.error || 'Failed to execute NFT operation');
-      }
-    } catch (err) {
-      setError('Network error: ' + err.message);
-    } finally {
-      setLoading(false);
+  const getRarityColor = (rarity) => {
+    switch (rarity) {
+      case 'Common': return 'text-slate-700 bg-gradient-to-r from-slate-100 to-gray-200 border border-slate-300 shadow-sm';
+      case 'Rare': return 'text-blue-700 bg-gradient-to-r from-blue-100 to-sky-200 border border-blue-300 shadow-sm';
+      case 'Epic': return 'text-purple-700 bg-gradient-to-r from-purple-100 to-violet-200 border border-purple-300 shadow-sm';
+      case 'Legendary': return 'text-amber-700 bg-gradient-to-r from-yellow-100 to-amber-200 border border-yellow-300 shadow-sm';
+      default: return 'text-slate-700 bg-gradient-to-r from-slate-100 to-gray-200 border border-slate-300 shadow-sm';
     }
   };
 
-  const useSampleAddress = () => {
-    setUserAddress(sampleAddress);
-  };
-
-  const useSampleNftObjectId = () => {
-    setNftObjectId('0x1234567890abcdef1234567890abcdef12345678');
-  };
-
-  const operationColors = {
-    mint: 'bg-green-600 hover:bg-green-700 focus:ring-green-500',
-    transfer: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-    update: 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500',
-    burn: 'bg-red-600 hover:bg-red-700 focus:ring-red-500'
-  };
-
-  const operationEmojis = {
-    mint: '🎨',
-    transfer: '📤',
-    update: '✏️',
-    burn: '🔥'
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+    <>
       <Head>
-        <title>Sponsored NFT Operations - IOTA Gas Station</title>
-        <meta name="description" content="Create, transfer, update and burn NFTs using IOTA Gas Station sponsorship" />
-        <link rel="icon" href="/favicon.ico" />
+        <title>Class Attendance NFT Rewards</title>
+        <meta name="description" content="Mint exclusive NFT rewards for attending classes" />
       </Head>
 
-      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="md:p-8 p-6">
-          <div className="uppercase tracking-wide text-sm text-cyan-500 font-semibold mb-1">
-            IOTA Gas Station Demo
-          </div>
-          <h1 className="block mt-1 text-lg leading-tight font-medium text-black">
-            Sponsored NFT Operations
-          </h1>
-          <p className="mt-2 text-gray-500">
-            Create, transfer, update, and burn NFTs without paying gas fees! All operations are sponsored by the gas station.
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-6">
-            {/* Operation Selection */}
-            <div className="mb-4">
-              <label htmlFor="operation" className="block text-sm font-medium text-gray-700 mb-2">
-                Choose NFT Operation:
-              </label>
-              <select
-                id="operation"
-                value={operation}
-                onChange={(e) => setOperation(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-              >
-                <option value="mint">🎨 Mint New NFT</option>
-                <option value="transfer">📤 Transfer NFT</option>
-                <option value="update">✏️ Update NFT Description</option>
-                <option value="burn">🔥 Burn NFT</option>
-              </select>
-            </div>
-
-            {/* User Address Input */}
-            <div className="mb-4">
-              <label htmlFor="userAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                User Address:
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="userAddress"
-                  value={userAddress}
-                  onChange={(e) => setUserAddress(e.target.value)}
-                  placeholder="Enter IOTA address or use sample"
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm"
-                />
-                <button
-                  type="button"
-                  onClick={useSampleAddress}
-                  className="px-3 py-2 text-xs bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                >
-                  Use Sample
-                </button>
-              </div>
-            </div>
-
-            {/* Mint-specific fields */}
-            {operation === 'mint' && (
-              <>
-                <div className="mb-4">
-                  <label htmlFor="nftName" className="block text-sm font-medium text-gray-700 mb-2">
-                    NFT Name:
-                  </label>
-                  <input
-                    type="text"
-                    id="nftName"
-                    value={nftName}
-                    onChange={(e) => setNftName(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                  />
-                </div>
-                
-                <div className="mb-4">
-                  <label htmlFor="nftDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                    NFT Description:
-                  </label>
-                  <textarea
-                    id="nftDescription"
-                    value={nftDescription}
-                    onChange={(e) => setNftDescription(e.target.value)}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                  />
-                </div>
-                
-                <div className="mb-4">
-                  <label htmlFor="nftUrl" className="block text-sm font-medium text-gray-700 mb-2">
-                    NFT Image URL:
-                  </label>
-                  <input
-                    type="url"
-                    id="nftUrl"
-                    value={nftUrl}
-                    onChange={(e) => setNftUrl(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Transfer-specific fields */}
-            {operation === 'transfer' && (
-              <>
-                <div className="mb-4">
-                  <label htmlFor="nftObjectId" className="block text-sm font-medium text-gray-700 mb-2">
-                    NFT Object ID:
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      id="nftObjectId"
-                      value={nftObjectId}
-                      onChange={(e) => setNftObjectId(e.target.value)}
-                      placeholder="Enter NFT object ID"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={useSampleNftObjectId}
-                      className="px-3 py-2 text-xs bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    >
-                      Sample
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <label htmlFor="recipientAddress" className="block text-sm font-medium text-gray-700 mb-2">
-                    Recipient Address:
-                  </label>
-                  <input
-                    type="text"
-                    id="recipientAddress"
-                    value={recipientAddress}
-                    onChange={(e) => setRecipientAddress(e.target.value)}
-                    placeholder="Enter recipient IOTA address"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Update-specific fields */}
-            {operation === 'update' && (
-              <>
-                <div className="mb-4">
-                  <label htmlFor="nftObjectId" className="block text-sm font-medium text-gray-700 mb-2">
-                    NFT Object ID:
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      id="nftObjectId"
-                      value={nftObjectId}
-                      onChange={(e) => setNftObjectId(e.target.value)}
-                      placeholder="Enter NFT object ID"
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={useSampleNftObjectId}
-                      className="px-3 py-2 text-xs bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                    >
-                      Sample
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <label htmlFor="newDescription" className="block text-sm font-medium text-gray-700 mb-2">
-                    New Description:
-                  </label>
-                  <textarea
-                    id="newDescription"
-                    value={newDescription}
-                    onChange={(e) => setNewDescription(e.target.value)}
-                    placeholder="Enter new description for the NFT"
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* Burn-specific fields */}
-            {operation === 'burn' && (
-              <div className="mb-4">
-                <label htmlFor="nftObjectId" className="block text-sm font-medium text-gray-700 mb-2">
-                  NFT Object ID:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    id="nftObjectId"
-                    value={nftObjectId}
-                    onChange={(e) => setNftObjectId(e.target.value)}
-                    placeholder="Enter NFT object ID"
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm"
-                  />
-                  <button
-                    type="button"
-                    onClick={useSampleNftObjectId}
-                    className="px-3 py-2 text-xs bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
-                  >
-                    Sample
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-                loading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : operationColors[operation] + ' focus:outline-none focus:ring-2 focus:ring-offset-2'
-              }`}
-            >
-              {loading ? (
-                <div className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Processing...
-                </div>
-              ) : (
-                `${operationEmojis[operation]} ${operation.charAt(0).toUpperCase() + operation.slice(1)} NFT (Gas Station Sponsored)`
-              )}
-            </button>
-          </form>
-
-          {/* Results */}
-          {result && (
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-green-800">
-                    Success! NFT Operation Completed
-                  </h3>
-                  <div className="mt-2 text-sm text-green-700">
-                    <p><strong>{result.message}</strong></p>
-                    <div className="mt-3 space-y-1 text-xs">
-                      <p><strong>🔧 Operation:</strong> {result.operation}</p>
-                      <p><strong>👤 User Address:</strong> <code className="text-xs bg-green-100 px-1 rounded">{result.userAddress}</code></p>
-                      <p><strong>🔗 Transaction ID:</strong> <code className="text-xs bg-green-100 px-1 rounded">{result.transactionId}</code></p>
-                      <p><strong>💰 Sponsor Account:</strong> <code className="text-xs bg-green-100 px-1 rounded">{result.sponsorAccount}</code></p>
-                      <p><strong>🎫 Reservation ID:</strong> {result.reservationId}</p>
-                      {result.details?.nftDetails && (
-                        <>
-                          <p><strong>🎨 NFT Name:</strong> {result.details.nftDetails.name}</p>
-                          <p><strong>📝 Description:</strong> {result.details.nftDetails.description}</p>
-                          {result.details.nftDetails.url && (
-                            <p><strong>🖼️ Image URL:</strong> <a href={result.details.nftDetails.url} target="_blank" rel="noopener noreferrer" className="text-green-600 underline">View Image</a></p>
-                          )}
-                          {result.details.nftDetails.objectId && (
-                            <p><strong>🆔 NFT Object ID:</strong> <code className="text-xs bg-green-100 px-1 rounded">{result.details.nftDetails.objectId}</code></p>
-                          )}
-                          {result.details.nftDetails.recipientAddress && (
-                            <p><strong>📤 Recipient:</strong> <code className="text-xs bg-green-100 px-1 rounded">{result.details.nftDetails.recipientAddress}</code></p>
-                          )}
-                        </>
-                      )}
-                      {result.transactionEffects && (
-                        <>
-                          <p><strong>⚡ Status:</strong> <span className="text-green-700">{result.transactionEffects.status.status}</span></p>
-                          <p><strong>⛽ Gas Used:</strong> {JSON.stringify(result.transactionEffects.gasUsed)}</p>
-                          <p><strong>📊 Objects Created:</strong> {result.transactionEffects.created}</p>
-                          <p><strong>📝 Objects Mutated:</strong> {result.transactionEffects.mutated}</p>
-                        </>
-                      )}
-                      {result.details?.realBlockchainTransaction && (
-                        <p className="font-bold text-green-800">🚀 REAL BLOCKCHAIN TRANSACTION EXECUTED!</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-md">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Error
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{error}</p>
-                    {error.includes('YOUR_DEPLOYED_NFT_PACKAGE_ID_HERE') && (
-                      <p className="mt-2 font-bold">
-                        ⚠️ You need to deploy the NFT contract first and update the package ID in the API!
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Instructions */}
-          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 px-4 relative">
+        {/* Token Balance Display */}
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-2xl shadow-xl px-6 py-3">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg">
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" />
                 </svg>
               </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
-                  Setup Instructions
-                </h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <ol className="list-decimal list-inside space-y-1">
-                    <li>Deploy the NFT smart contract: <code className="bg-blue-100 px-1 rounded">iota client publish sources/nft</code></li>
-                    <li>Copy the package ID from deployment output</li>
-                    <li>Update the package ID in <code className="bg-blue-100 px-1 rounded">pages/api/nft-sponsored.js</code></li>
-                    <li>Test the sponsored NFT operations!</li>
-                  </ol>
-                  <div className="mt-3 p-2 bg-blue-100 rounded">
-                    <p className="font-medium">Available Operations:</p>
-                    <ul className="mt-1 space-y-1">
-                      <li>🎨 <strong>Mint:</strong> Create new NFTs for free</li>
-                      <li>📤 <strong>Transfer:</strong> Send NFTs to other addresses</li>
-                      <li>✏️ <strong>Update:</strong> Modify NFT descriptions</li>
-                      <li>🔥 <strong>Burn:</strong> Permanently delete NFTs</li>
-                    </ul>
-                  </div>
-                </div>
+              <div>
+                <div className="text-xs text-gray-500 font-medium">Token Balance</div>
+                <div className="text-lg font-bold text-gray-900">{tokenBalance.toLocaleString()}</div>
               </div>
             </div>
           </div>
         </div>
+
+        <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold text-blue-900 mb-4">
+              🎓 Class Attendance Rewards
+            </h1>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Mint exclusive NFT rewards for your dedication to learning. Each NFT represents 
+              your commitment to education and unlocks special benefits.
+            </p>
+            <div className="mt-6 inline-flex items-center px-6 py-3 bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 rounded-full text-sm font-medium shadow-lg border border-emerald-200">
+              ✨ Limited Time Offer - Mint Now!
+            </div>
+          </div>
+
+          {/* NFT Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {nftRewards.map((nft) => (
+              <div
+                key={nft.id}
+                className={`bg-white rounded-3xl shadow-2xl overflow-hidden hover:shadow-3xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 border-2 ${nft.borderColor} ${nft.glowColor} relative group flex flex-col h-full`}
+              >
+                {/* Animated background overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl"></div>
+                
+                {/* NFT Image/Icon Section */}
+                <div className={`${nft.color} p-10 relative overflow-hidden`}>
+                  {/* Animated background elements */}
+                  <div className="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -translate-y-20 translate-x-20 animate-pulse"></div>
+                  <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/15 rounded-full translate-y-16 -translate-x-16 animate-pulse delay-75"></div>
+                  <div className="absolute top-1/2 left-1/2 w-24 h-24 bg-white/5 rounded-full -translate-x-12 -translate-y-12 animate-ping delay-150"></div>
+                  
+                  <div className="relative z-10 flex justify-center">
+                    {nft.icon}
+                  </div>
+                  <div className="absolute top-4 right-4">
+                    <span className={`px-4 py-2 rounded-full text-xs font-bold ${getRarityColor(nft.rarity)}`}>
+                      {nft.rarity}
+                    </span>
+                  </div>
+                </div>
+
+                {/* NFT Details */}
+                <div className="p-6 relative flex flex-col flex-grow">
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">{nft.title}</h3>
+                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">{nft.description}</p>
+                  
+                  <div className="mb-5">
+                    <div className="text-xs text-gray-500 mb-2 font-medium">Benefit:</div>
+                    <div className="text-sm font-semibold text-gray-700 bg-gray-50 rounded-lg p-3 border min-h-[3rem] flex items-center">{nft.benefit}</div>
+                  </div>
+
+                  {/* Cost Display */}
+                  <div className="mb-5 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border-2 border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">Mint Cost:</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-5 h-5 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z" />
+                          </svg>
+                        </div>
+                        <span className="font-bold text-lg text-gray-900">{nft.cost}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 gap-3 mb-6 text-center">
+                    <div className="bg-gradient-to-br from-gray-50 to-slate-100 rounded-xl p-3 border shadow-sm">
+                      <div className="text-xs text-gray-500 font-medium">Supply</div>
+                      <div className="font-bold text-gray-900">Limited</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-gray-50 to-slate-100 rounded-xl p-3 border shadow-sm">
+                      <div className="text-xs text-gray-500 font-medium">Chain</div>
+                      <div className="font-bold text-gray-900">IOTA</div>
+                    </div>
+                  </div>
+
+                  {/* Spacer to push button to bottom */}
+                  <div className="flex-grow"></div>
+
+                  {/* Mint Button */}
+                  <button
+                    onClick={() => handleMint(nft.id, nft.cost)}
+                    disabled={mintingStates[nft.id] || tokenBalance < nft.cost}
+                    className={`w-full py-4 px-6 rounded-2xl font-bold text-white transition-all duration-300 text-sm mt-auto ${
+                      mintingStates[nft.id]
+                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed shadow-lg'
+                        : tokenBalance < nft.cost
+                        ? 'bg-gradient-to-r from-red-400 to-red-500 cursor-not-allowed shadow-lg'
+                        : `bg-gradient-to-r ${nft.buttonColor} hover:shadow-2xl hover:scale-105 active:scale-95 shadow-lg`
+                    }`}
+                  >
+                    {mintingStates[nft.id] ? (
+                      <div className="flex items-center justify-center">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Minting...
+                      </div>
+                    ) : tokenBalance < nft.cost ? (
+                      '❌ Insufficient Tokens'
+                    ) : (
+                      '🚀 Mint NFT'
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
