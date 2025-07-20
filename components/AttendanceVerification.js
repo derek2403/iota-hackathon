@@ -433,9 +433,6 @@ const AttendanceVerification = () => {
                       ? "ATTENDANCE VERIFIED"
                       : "VERIFICATION FAILED"}
                   </div>
-                  <div className="text-xl">
-                    Confidence: {verificationResult.confidence}%
-                  </div>
                   <div className="text-lg mt-2">
                     User: {verificationResult.verifiedProfile.name}
                   </div>
@@ -456,10 +453,6 @@ const AttendanceVerification = () => {
                     <p>
                       <strong>Biometric Features:</strong>{" "}
                       {verificationResult.biometricMatch ? "✅" : "❌"}
-                    </p>
-                    <p>
-                      <strong>Landmark Analysis:</strong>{" "}
-                      {verificationResult.landmarkMatch ? "✅" : "❌"}
                     </p>
                   </div>
                 </div>
