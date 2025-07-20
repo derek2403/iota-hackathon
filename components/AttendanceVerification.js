@@ -383,13 +383,6 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                 <>Verify Attendance</>
               )}
             </button>
-
-            <button
-              onClick={resetVerification}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-4 px-8 rounded-lg text-lg transition-colors duration-200"
-            >
-              🔄 Reset
-            </button>
           </div>
 
           {notarizing && (
