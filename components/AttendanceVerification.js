@@ -328,7 +328,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
         <div className="bg-white rounded-xl shadow-xl p-8">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              📷 Identity Verification
+              Attendance Marking
             </h2>
             <p className="text-gray-600">
               Verify your attendance using facial recognition
