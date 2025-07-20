@@ -1,4 +1,4 @@
-# 🎓 Decentralized Proof-of-Attendance & Verifiable University Credentials (IOTA Hackathon 2025)
+# 🎓 Cap Attendance
 
 ## 🧠 Introduction
 Our project presents a decentralized system that verifies student attendance using face recognition and builds **verifiable academic credentials** on-chain — eliminating manual, spoofable attendance systems and centralized academic records.
