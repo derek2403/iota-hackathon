@@ -4,7 +4,6 @@ import { loadFaceModels } from "../utils/faceDetection";
 import { processCompleteface } from "../utils/faceProcessing";
 import { compareFaces } from "../utils/faceComparison";
 import { encodeFaceData, decodeFaceData } from "../utils/dataEncoding";
-import { mintAttendanceToken, initializeSystem } from "../utils/mint-token.js";
 
 const AttendanceVerification = ({ onVerificationSuccess }) => {
   const webcamRef = useRef(null);
@@ -179,98 +178,45 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
 
       setVerificationResult(result);
 
-      // If attendance verification was successful, run both processes independently
+      // If attendance verification was successful
       if (result.success) {
-        console.log("✅ Attendance verified successfully!");
+        console.log("✅ Identity verified successfully!");
 
-        // Run both processes in parallel
-        const [notarization, tokenMinting] = await Promise.allSettled([
-          // Process 1: Create blockchain notarization
-          (async () => {
-            console.log("🔗 Creating blockchain notarization...");
-            try {
-              const notarizationResult = await createAttendanceNotarization({
-                id: Date.now(),
-                profileId: selectedProfile.id,
-                userName: selectedProfile.name,
-                userEmail: selectedProfile.email,
-                timestamp: new Date().toISOString(),
-                success: result.success,
-                confidence: result.confidence,
-                verificationDetails: {
-                  descriptorMatch: result.descriptorMatch,
-                  geometryMatch: result.geometryMatch,
-                  biometricMatch: result.biometricMatch,
-                  landmarkMatch: result.landmarkMatch,
-                },
-              });
-              console.log("✅ Blockchain notarization created successfully!");
-              return notarizationResult;
-            } catch (error) {
-              console.error(
-                "❌ Failed to create blockchain notarization:",
-                error
-              );
-              return null;
+        // Create blockchain notarization
+        const notarizationResult = await createAttendanceNotarization({
+          id: Date.now(),
+          profileId: selectedProfile.id,
+          userName: selectedProfile.name,
+          userEmail: selectedProfile.email,
+          timestamp: new Date().toISOString(),
+          success: result.success,
+          confidence: result.confidence,
+          verificationDetails: {
+            descriptorMatch: result.descriptorMatch,
+            geometryMatch: result.geometryMatch,
+            biometricMatch: result.biometricMatch,
+            landmarkMatch: result.landmarkMatch,
+          },
+        });
+
+        if (notarizationResult) {
+          setNotarizationResult(notarizationResult);
+          // Show results modal
+          setShowResultsModal(true);
+
+          // Call the success callback after a short delay
+          setTimeout(() => {
+            if (onVerificationSuccess) {
+              onVerificationSuccess();
             }
-          })(),
-
-          // Process 2: Mint attendance token
-          (async () => {
-            console.log("🪙 Minting attendance token...");
-            try {
-              // First initialize the system to get admin address
-              const { adminAddress } = await initializeSystem();
-
-              const courseId = "CS101"; // You can make this dynamic if needed
-              const mintResult = await mintAttendanceToken(
-                adminAddress,
-                courseId
-              );
-              if (mintResult) {
-                console.log("✅ Attendance token minted successfully!");
-                result.tokenMinted = true;
-                return mintResult;
-              } else {
-                console.error("❌ Failed to mint attendance token");
-                result.tokenMinted = false;
-                return null;
-              }
-            } catch (mintError) {
-              console.error("Error minting token:", mintError);
-              result.tokenMinted = false;
-              return null;
-            }
-          })(),
-        ]);
-
-        // Update states based on results
-        if (notarization.status === "fulfilled" && notarization.value) {
-          setNotarizationResult(notarization.value);
+          }, 3000); // 3 seconds delay
         }
-
-        // Update verification result with final token status
-        setVerificationResult((prev) => ({
-          ...prev,
-          tokenMinted:
-            tokenMinting.status === "fulfilled" && tokenMinting.value !== null,
-        }));
-
-        // Show results modal
+      } else {
+        // Show results modal for failed verification
         setShowResultsModal(true);
-
-        // Call the success callback after a short delay to allow the user to see the success message
-        setTimeout(() => {
-          if (onVerificationSuccess) {
-            onVerificationSuccess();
-          }
-        }, 3000); // 3 seconds delay
       }
 
-      // Show results modal
-      setShowResultsModal(true);
-
-      console.log("Attendance verification completed:", result);
+      console.log("Identity verification completed:", result);
     } catch (err) {
       setError("Error during verification: " + err.message);
     } finally {
@@ -416,7 +362,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
               {/* Modal Header */}
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-2xl font-bold text-gray-900">
-                  Verification Results
+                  Identity Verification Results
                 </h3>
                 <button
                   onClick={closeResultsModal}
@@ -440,7 +386,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                   </div>
                   <div className="text-2xl font-bold mb-2">
                     {verificationResult.success
-                      ? "ATTENDANCE VERIFIED"
+                      ? "IDENTITY VERIFIED"
                       : "VERIFICATION FAILED"}
                   </div>
                   <div className="text-xl">
@@ -481,50 +427,23 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                 </div>
               </div>
 
-              {/* Token Minting Status */}
-              {verificationResult.success && (
-                <div
-                  className={`border-2 px-6 py-6 rounded-lg mb-6 ${
-                    verificationResult.tokenMinted
-                      ? "bg-green-50 border-green-400"
-                      : "bg-yellow-50 border-yellow-400"
-                  }`}
-                >
-                  <div className="text-center mb-4">
-                    <div className="text-4xl mb-3">
-                      {verificationResult.tokenMinted ? "🪙" : "⏳"}
-                    </div>
-                    <div className="text-xl font-bold mb-2">
-                      {verificationResult.tokenMinted
-                        ? "ATTENDANCE TOKEN MINTED"
-                        : "TOKEN MINTING STATUS"}
-                    </div>
-                    <div className="text-lg">
-                      {verificationResult.tokenMinted
-                        ? "✅ Token successfully minted"
-                        : "❌ Token minting failed"}
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {/* Blockchain Notarization Results */}
               {notarizationResult && verificationResult.success && (
                 <div className="border-2 border-green-400 bg-green-50 px-6 py-6 rounded-lg">
                   <div className="text-center mb-4">
                     <div className="text-4xl mb-3">🔗</div>
                     <div className="text-xl font-bold text-green-800 mb-2">
-                      BLOCKCHAIN NOTARIZATION CREATED
+                      IDENTITY VERIFICATION RECORDED
                     </div>
                     <div className="text-green-700">
-                      Attendance record permanently stored on IOTA blockchain
+                      Login verification record stored on IOTA blockchain
                     </div>
                   </div>
 
                   <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="font-medium text-green-800">
-                        Notarization ID:
+                        Record ID:
                       </span>
                       <span className="font-mono text-green-700 text-xs">
                         {notarizationResult.id}
@@ -540,7 +459,7 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium text-green-800">
-                        Created:
+                        Timestamp:
                       </span>
                       <span className="text-green-700">
                         {new Date(
@@ -548,23 +467,6 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                         ).toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-green-800">
-                        Immutable:
-                      </span>
-                      <span className="text-green-700">✅ Yes</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 bg-white bg-opacity-50 rounded text-xs">
-                    <p>
-                      <strong>Session ID:</strong>{" "}
-                      {notarizationResult.attendanceMetadata?.sessionId}
-                    </p>
-                    <p>
-                      <strong>Verification Type:</strong>{" "}
-                      {notarizationResult.attendanceMetadata?.type}
-                    </p>
                   </div>
                 </div>
               )}
@@ -580,14 +482,16 @@ const AttendanceVerification = ({ onVerificationSuccess }) => {
                   }}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
                 >
-                  {verificationResult.success ? "Continue to Summary" : "Close"}
+                  {verificationResult.success
+                    ? "Continue to Dashboard"
+                    : "Close"}
                 </button>
                 {!verificationResult.success && (
                   <button
                     onClick={resetVerification}
                     className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
                   >
-                    Verify Another
+                    Try Again
                   </button>
                 )}
               </div>

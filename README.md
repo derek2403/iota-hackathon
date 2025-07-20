@@ -1,6 +1,7 @@
 # 🎓 Decentralized Proof-of-Attendance & Verifiable University Credentials (IOTA Hackathon 2025)
 
 ## 🧠 Introduction
+
 Our project presents a decentralized system that verifies student attendance using face recognition and builds **verifiable academic credentials** on-chain — eliminating manual, spoofable attendance systems and centralized academic records.
 
 This system uses **IOTA L1**, **DIDs**, **face-hashing**, **closed-loop tokens**, and **smart contracts** to transparently reward attendance and build a tamper-proof academic journey for each student.
@@ -8,17 +9,20 @@ This system uses **IOTA L1**, **DIDs**, **face-hashing**, **closed-loop tokens**
 ---
 
 ## ✨ Inspiration
+
 Most universities still rely on centralized, error-prone attendance and record-keeping. Students often help others "check in" with QR codes or passcodes, which weakens the integrity of attendance-based certifications.
 
 We wanted to:
+
 - Prevent attendance fraud
 - Incentivize real participation
-- Let students graduate *by their own actions*, not centralized admin approval
+- Let students graduate _by their own actions_, not centralized admin approval
 - Provide employers and institutions **verifiable credentials** without third-party validation
 
 ---
 
 ## ❌ Problem
+
 - Universities use centralized databases to store attendance and transcripts
 - Fake attendance (QR pass, code sharing) is rampant
 - Students can't easily prove academic records across borders
@@ -27,7 +31,9 @@ We wanted to:
 ---
 
 ## ✅ Solution
+
 We built a decentralized **Proof-of-Attendance System** where:
+
 - Students **KYC once** and receive an on-chain **DID**
 - Attendance is taken using **Face Recognition**, converted to a **Face Hash**
 - That hash is mapped to the DID and verified using **IOTA notarization**
@@ -56,7 +62,7 @@ flowchart TD
     K --> L[Achieve Milestones]
     L --> M[Use CLT to Get Certificate NFT]
     M --> N[Verifiable Student Record]
-    
+
     style A fill:#ffffff,stroke:#000000,stroke-width:3px,color:#000000
     style B fill:#ffffff,stroke:#000000,stroke-width:2px,color:#000000
     style C fill:#4CAF50,stroke:#000000,stroke-width:3px,color:#ffffff
@@ -77,23 +83,23 @@ flowchart TD
 
 ## 🛠️ Tech Stack
 
-| Component             | Tool/Framework                  |
-| --------------------- | ------------------------------- |
-| Blockchain            | IOTA L1                         |
-| Identity              | Decentralized Identifier (DID)  |
-| Attendance Validation | Face Recognition → Hash         |
-| Gas Fee Management    | IOTA Gas Station                |
-| Smart Contracts       | Move                            |
-| Token Rewards         | Closed Loop Token (CLT)         |
-| NFTs                  | Attendance Badges & Certificates|
-| Certificate           | NFT Issuance via Smart Contract |
-| Backend               | Rust / Node.js                  |
-| Frontend              | React / TailwindCSS             |
-| NFC Optionality       | UID–DID mapping (future work)   |
+| Component             | Tool/Framework                   |
+| --------------------- | -------------------------------- |
+| Blockchain            | IOTA L1                          |
+| Identity              | Decentralized Identifier (DID)   |
+| Attendance Validation | Face Recognition → Hash          |
+| Gas Fee Management    | IOTA Gas Station                 |
+| Smart Contracts       | Move                             |
+| Token Rewards         | Closed Loop Token (CLT)          |
+| NFTs                  | Attendance Badges & Certificates |
+| Certificate           | NFT Issuance via Smart Contract  |
+| Backend               | Rust / Node.js                   |
+| Frontend              | React / TailwindCSS              |
+| NFC Optionality       | UID–DID mapping (future work)    |
 
 ---
 
-##  📁 Important Code Directory Structure
+## 📁 Important Code Directory Structure
 
 ```bash
 project-root/
@@ -123,12 +129,12 @@ project-root/
 
 ## 🚀 Future Implementations
 
-* ✅ NFC Tap-to-Attend (UID maps to DID)
-* ✅ Integrate zk-KYC for privacy-preserving verification
-* ✅ AI Face Matching on-device (no camera footage stored)
-* ✅ Real-time Certificate Verification Dashboard for employers
-* ✅ Mobile App + Wallet Integration (CLT + NFTs)
-* ✅ DAO-based subject approval & graduation process
+- ✅ NFC Tap-to-Attend (UID maps to DID)
+- ✅ Integrate zk-KYC for privacy-preserving verification
+- ✅ AI Face Matching on-device (no camera footage stored)
+- ✅ Real-time Certificate Verification Dashboard for employers
+- ✅ Mobile App + Wallet Integration (CLT + NFTs)
+- ✅ DAO-based subject approval & graduation process
 
 ---
 
@@ -136,11 +142,11 @@ project-root/
 
 ### 🔧 Prerequisites
 
-* [Rust](https://www.rust-lang.org/)
-* [Move CLI](https://github.com/move-language/move)
-* Docker (for gas station)
-* Node.js (for frontend/backend)
-* A webcam (for face hash testing)
+- [Rust](https://www.rust-lang.org/)
+- [Move CLI](https://github.com/move-language/move)
+- Docker (for gas station)
+- Node.js (for frontend/backend)
+- A webcam (for face hash testing)
 
 ---
 
