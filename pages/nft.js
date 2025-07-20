@@ -74,9 +74,18 @@ export default function NFTPage() {
     voucher1: false,
     voucher2: false,
   });
+  const [tokenBalance, setTokenBalance] = useState(1250);
+  const [showTransactionDialog, setShowTransactionDialog] = useState(false);
+  const [currentTransaction, setCurrentTransaction] = useState(null);
 
-  // Token balance state
-  const [tokenBalance, setTokenBalance] = useState(1250); // Initial balance
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Transaction hash copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
   const handleMint = async (nftType, cost) => {
     if (tokenBalance < cost) {
@@ -89,31 +98,29 @@ export default function NFTPage() {
     setMintingStates((prev) => ({ ...prev, [nftType]: true }));
 
     try {
-      // Find the NFT data for this type
       const nftData = nftRewards.find((nft) => nft.id === nftType);
-
-      // Prepare NFT metadata
       const name = nftData.title;
       const description = nftData.description;
-      const imageUrl = `https://example.com/nft/${nftType}.jpg`; // You can customize this
+      const imageUrl = `https://example.com/nft/${nftType}.jpg`;
 
       console.log(`🎨 Starting NFT mint for: ${name}`);
 
-      // Call the actual mint function
       const result = await mintNFT(name, description, imageUrl);
 
       if (result) {
-        // Success - deduct tokens and show success
         setTokenBalance((prev) => prev - cost);
-        alert(
-          `${name} NFT minted successfully! 🎉\n` +
-            `Transaction: ${result.digest}\n` +
-            `Tokens spent: ${cost}\n` +
-            `Remaining balance: ${tokenBalance - cost}`
-        );
+
+        // Store transaction details and show dialog
+        setCurrentTransaction({
+          name,
+          cost,
+          digest: result.digest,
+          newBalance: tokenBalance - cost,
+        });
+        setShowTransactionDialog(true);
+
         console.log("✅ NFT minted successfully:", result);
       } else {
-        // Failed - show error
         alert(`❌ Failed to mint ${name} NFT. Please try again.`);
         console.error("❌ NFT minting failed");
       }
@@ -237,6 +244,101 @@ export default function NFTPage() {
           content="Mint exclusive NFT rewards for attending classes"
         />
       </Head>
+
+      {/* Transaction Success Dialog */}
+      {showTransactionDialog && currentTransaction && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg
+                  className="w-8 h-8 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                NFT Minted Successfully! 🎉
+              </h3>
+              <p className="text-sm text-gray-600">
+                {currentTransaction.name} has been minted to your wallet
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="text-sm text-gray-600 mb-1">
+                  Transaction Hash:
+                </div>
+                <div className="flex items-center space-x-2">
+                  <code className="text-xs bg-gray-100 p-2 rounded flex-1 overflow-x-auto">
+                    {currentTransaction.digest}
+                  </code>
+                  <button
+                    onClick={() => copyToClipboard(currentTransaction.digest)}
+                    className="p-2 text-blue-600 hover:text-blue-800 transition-colors"
+                    title="Copy to clipboard"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600">Tokens Spent:</div>
+                  <div className="text-lg font-bold text-gray-900">
+                    {currentTransaction.cost}
+                  </div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600">New Balance:</div>
+                  <div className="text-lg font-bold text-gray-900">
+                    {currentTransaction.newBalance}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowTransactionDialog(false)}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+                <a
+                  href={`https://explorer.iota.org/testnet/transaction/${currentTransaction.digest}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  View on Explorer
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 py-12 px-4 relative">
         {/* Token Balance Display */}
