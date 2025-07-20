@@ -5,6 +5,9 @@ Our project presents a decentralized system that verifies student attendance usi
 
 This system uses **IOTA L1**, **DIDs**, **face-hashing**, **closed-loop tokens**, and **smart contracts** to transparently reward attendance and build a tamper-proof academic journey for each student.
 
+
+Video Demo: https://drive.google.com/drive/folders/1zF2cTX2lsddqI9kJPnVHjPa_DuOlddQ7?usp=sharing
+
 ---
 
 ## ✨ Inspiration
