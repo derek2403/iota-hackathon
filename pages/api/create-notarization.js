@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         stateMetadata: notarization.state.metadata,
         description: notarization.immutableMetadata.description,
         updatableMetadata: notarization.updatableMetadata,
-        createdAt: notarization.immutableMetadata.createdAt.toString(),
+        createdAt: new Date().toISOString(),
         locking: notarization.immutableMetadata.locking
       }
     });

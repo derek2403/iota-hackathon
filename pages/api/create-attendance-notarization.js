@@ -79,7 +79,7 @@ export default async function handler(req, res) {
         description: notarization.immutableMetadata.description,
         attendanceMetadata: attendanceMetadata,
         blockchainData: blockchainAttendanceData,
-        createdAt: notarization.immutableMetadata.createdAt.toString(),
+        createdAt: new Date().toISOString(),
         locking: notarization.immutableMetadata.locking,
         blockchainProof: {
           network: 'IOTA Testnet',
